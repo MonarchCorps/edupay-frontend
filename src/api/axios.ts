@@ -1,4 +1,4 @@
-import axios, { type AxiosError } from 'axios'
+import axios, { type AxiosError, type AxiosResponse } from 'axios'
 import { API_BASE_URL } from '../utils/constants'
 import type { ApiError } from '../types'
 
@@ -13,18 +13,33 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Unwrap the backend envelope: { success: true, data: ..., pagination?: {...} }
 api.interceptors.response.use(
-  (res) => res,
-  (err: AxiosError<{ code?: string; message?: string; details?: unknown }>) => {
+  (res: AxiosResponse) => {
+    const body = res.data
+    if (body && typeof body === 'object' && body.success === true) {
+      if (body.pagination) {
+        // Paginated: reshape to { data: T[], total: number }
+        res.data = { data: body.data, total: body.pagination.total }
+      } else {
+        // Single entity or array: unwrap to the inner data
+        res.data = body.data
+      }
+    }
+    return res
+  },
+  (err: AxiosError<{ success?: boolean; error?: { code?: string; message?: string; details?: unknown } }>) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('edupay_api_key')
       window.location.href = '/settings'
     }
-    const data = err.response?.data
+    const body = err.response?.data
+    // Backend wraps errors as { success: false, error: { code, message } }
+    const errPayload = body?.error ?? (body as Record<string, unknown> | undefined)
     const rejection: ApiError = {
-      code:    data?.code    ?? 'UNKNOWN_ERROR',
-      message: data?.message ?? err.message ?? 'Something went wrong. Please try again.',
-      details: data?.details ?? null,
+      code:    (errPayload as { code?: string })?.code    ?? 'UNKNOWN_ERROR',
+      message: (errPayload as { message?: string })?.message ?? err.message ?? 'Something went wrong. Please try again.',
+      details: (errPayload as { details?: unknown })?.details ?? null,
     }
     return Promise.reject(rejection)
   }

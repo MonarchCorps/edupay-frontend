@@ -35,7 +35,7 @@ export async function getApiKeys(): Promise<ApiKey[]> {
     await sleep(300)
     return getMockKeys()
   }
-  const { data } = await api.get<ApiKey[]>('/api-keys')
+  const { data } = await api.get<ApiKey[]>('/auth/keys')
   return data
 }
 
@@ -54,7 +54,7 @@ export async function generateApiKey(): Promise<ApiKey> {
     setStoredApiKey(raw)
     return entry
   }
-  const { data } = await api.post<ApiKey>('/api-keys')
+  const { data } = await api.post<ApiKey>('/auth/keys')
   setStoredApiKey(data.key)
   return data
 }
@@ -66,5 +66,5 @@ export async function revokeApiKey(id: string): Promise<void> {
     saveMockKeys(keys)
     return
   }
-  await api.delete(`/api-keys/${id}`)
+  await api.delete(`/auth/keys/${id}`)
 }

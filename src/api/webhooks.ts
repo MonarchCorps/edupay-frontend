@@ -15,7 +15,7 @@ export async function getWebhookEvents(params: WebhookParams = {}): Promise<Pagi
     if (params.processed !== undefined) list = list.filter((w) => w.processed === params.processed)
     return { data: list, total: list.length }
   }
-  const { data } = await api.get<PaginatedResponse<WebhookEvent>>('/webhook-events', { params })
+  const { data } = await api.get<PaginatedResponse<WebhookEvent>>('/webhooks/events', { params })
   return data
 }
 
@@ -24,7 +24,7 @@ export async function getWebhookEvent(id: string): Promise<WebhookEvent | null> 
     await sleep(200)
     return _webhooks.find((w) => w.id === id) ?? null
   }
-  const { data } = await api.get<WebhookEvent>(`/webhook-events/${id}`)
+  const { data } = await api.get<WebhookEvent>(`/webhooks/events/${id}`)
   return data
 }
 
@@ -38,6 +38,6 @@ export async function replayWebhookEvent(id: string): Promise<WebhookEvent | und
     )
     return _webhooks.find((w) => w.id === id)
   }
-  const { data } = await api.post<WebhookEvent>(`/webhook-events/${id}/replay`)
+  const { data } = await api.post<WebhookEvent>(`/webhooks/events/${id}/replay`)
   return data
 }
