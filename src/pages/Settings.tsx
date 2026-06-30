@@ -1,14 +1,16 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Card, Button, Title, Text, List, ListItem, Flex,
 } from '@tremor/react'
-import { Key, Trash2, Plus } from 'lucide-react'
+import { Key, Trash2, Plus, LogOut } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Modal } from '../components/ui/Modal'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useApiKeys, useGenerateApiKey, useRevokeApiKey } from '../hooks/useApiKeys'
 import { maskApiKey, formatDateTime } from '../utils/formatters'
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
+import { clearStoredApiKey } from '../api/auth'
 import type { ApiKey } from '../types'
 
 interface NewKeyModalProps {
@@ -57,11 +59,17 @@ function Row({ label, value, mono }: RowProps) {
 }
 
 export default function Settings() {
+  const navigate = useNavigate()
   const { data: keys = [], isLoading } = useApiKeys()
   const generate = useGenerateApiKey()
   const revoke = useRevokeApiKey()
   const [newKey, setNewKey] = useState<string | null>(null)
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null)
+
+  const handleLogout = () => {
+    clearStoredApiKey()
+    navigate('/onboarding', { replace: true })
+  }
 
   const handleGenerate = async () => {
     const result = await generate.mutateAsync()
@@ -130,6 +138,26 @@ export default function Settings() {
           <Row label="Created" value="1 Jan 2026" />
           <Row label="Plan" value="Developer (Sandbox)" />
         </div>
+      </Card>
+
+      <Card className="border border-red-100">
+        <Flex>
+          <div>
+            <Title className="text-red-700 text-base">Sign Out</Title>
+            <Text className="text-gray-500 text-sm mt-0.5">
+              Clears your API key from this browser. You'll need to re-enter it to access the dashboard.
+            </Text>
+          </div>
+          <Button
+            variant="secondary"
+            color="red"
+            icon={LogOut}
+            onClick={handleLogout}
+            className="flex-shrink-0"
+          >
+            Sign Out
+          </Button>
+        </Flex>
       </Card>
 
       <NewKeyModal apiKey={newKey} onClose={() => setNewKey(null)} />

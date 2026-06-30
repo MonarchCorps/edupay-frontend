@@ -67,6 +67,7 @@ export function AccountTable({
         <TableHead>
           <TableRow>
             <TableHeaderCell>Account Number</TableHeaderCell>
+            <TableHeaderCell>Bank</TableHeaderCell>
             <TableHeaderCell>Customer</TableHeaderCell>
             <TableHeaderCell>Status</TableHeaderCell>
             <TableHeaderCell>KYC Tier</TableHeaderCell>
@@ -83,6 +84,7 @@ export function AccountTable({
               onClick={() => navigate(`/accounts/${acc.id}`)}
             >
               <TableCell><CopyCell value={acc.accountNumber} /></TableCell>
+              <TableCell className="text-sm text-gray-500">{acc.bankName || '—'}</TableCell>
               <TableCell className="font-medium text-gray-900">{acc.customerName}</TableCell>
               <TableCell><AccountStatusBadge status={acc.status} /></TableCell>
               <TableCell className="text-gray-600">{KYC_TIERS[acc.kycTier]?.label ?? acc.kycTier}</TableCell>

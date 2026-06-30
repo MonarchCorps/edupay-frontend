@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import {
-  Card, Metric, Text, ProgressBar, Callout, Grid, Col, Flex, Title,
+  Card, Metric, Text, ProgressBar, Callout, Grid, Col, Flex, Title, Button,
 } from '@tremor/react'
-import { AlertTriangle, Zap } from 'lucide-react'
+import { AlertTriangle, Zap, PlusCircle } from 'lucide-react'
 import { VolumeChart } from '../components/charts/VolumeChart'
 import { AccountStatusChart } from '../components/charts/AccountStatusChart'
 import { AccountTable } from '../components/accounts/AccountTable'
@@ -35,6 +35,25 @@ export default function Dashboard() {
     statusBreakdown, volumeChartData,
     recentAccounts, recentWebhooks,
   } = stats
+
+  if (totalAccounts === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-mid/10 rounded-2xl mb-6">
+          <Zap className="w-8 h-8 text-brand-mid" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">No virtual accounts yet</h2>
+        <p className="text-sm text-gray-500 mb-6 max-w-xs">
+          Provision your first virtual account to start accepting payments and tracking transactions.
+        </p>
+        <Link to="/accounts">
+          <Button icon={PlusCircle} className="bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold">
+            Provision your first account
+          </Button>
+        </Link>
+      </div>
+    )
+  }
 
   const activePercent = totalAccounts > 0
     ? Math.round((activeAccounts / totalAccounts) * 100)
@@ -114,4 +133,3 @@ export default function Dashboard() {
   )
 }
 
-void Zap

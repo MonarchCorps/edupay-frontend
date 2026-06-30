@@ -1,7 +1,7 @@
 import { USE_MOCK } from '../utils/constants'
 import { sleep, generateId } from '../utils/helpers'
 import api from './axios'
-import type { ApiKey } from '../types'
+import type { ApiKey, Merchant } from '../types'
 
 const STORAGE_KEY = 'edupay_api_key'
 const MOCK_KEYS_KEY = 'edupay_mock_keys'
@@ -30,6 +30,22 @@ export function clearStoredApiKey(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
 
+export async function getMerchantByEmail(email: string): Promise<Merchant> {
+  const { data } = await api.get<Merchant>('/auth/merchants/by-email', { params: { email } })
+  return data
+}
+
+export async function registerMerchant(name: string, email: string): Promise<Merchant> {
+  const { data } = await api.post<Merchant>('/auth/merchants', { name, email })
+  return data
+}
+
+export async function bootstrapApiKey(merchantId: string): Promise<ApiKey> {
+  const { data } = await api.post<ApiKey>(`/auth/merchants/${merchantId}/keys`, { label: 'Default key' })
+  setStoredApiKey(data.key)
+  return data
+}
+
 export async function getApiKeys(): Promise<ApiKey[]> {
   if (USE_MOCK) {
     await sleep(300)
@@ -46,6 +62,7 @@ export async function generateApiKey(): Promise<ApiKey> {
     const entry: ApiKey = {
       id: generateId(),
       key: raw,
+      label: null,
       createdAt: new Date().toISOString(),
       lastUsed: null,
     }

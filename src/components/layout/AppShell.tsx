@@ -1,10 +1,17 @@
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, Navigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
+import { getStoredApiKey } from '../../api/auth'
+import { USE_MOCK } from '../../utils/constants'
 
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  // In live mode, require an API key — send unauthenticated visitors to onboarding
+  if (!USE_MOCK && !getStoredApiKey()) {
+    return <Navigate to="/onboarding" replace />
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

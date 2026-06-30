@@ -1,9 +1,15 @@
 import type { Account } from '../../types'
 
+// Nomba DVAs are issued on Wema Bank (035)
+const BANK_NAME = 'Wema Bank'
+const BANK_CODE = '035'
+
 export const mockAccounts: Account[] = [
   {
     id: 'acc_001',
     accountNumber: '0031234567',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Chukwuemeka Okafor',
     customerId: 'cust_001',
     status: 'active',
@@ -16,6 +22,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_002',
     accountNumber: '0039876543',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Adaeze Nwosu',
     customerId: 'cust_002',
     status: 'active',
@@ -28,6 +36,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_003',
     accountNumber: '0035551234',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Tunde Fashola',
     customerId: 'cust_003',
     status: 'active',
@@ -40,6 +50,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_004',
     accountNumber: '0037778901',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Ngozi Eze',
     customerId: 'cust_004',
     status: 'active',
@@ -52,6 +64,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_005',
     accountNumber: '0032223344',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Babatunde Adeyemi',
     customerId: 'cust_005',
     status: 'active',
@@ -64,6 +78,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_006',
     accountNumber: '0034445566',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Ifeoma Obiora',
     customerId: 'cust_006',
     status: 'active',
@@ -76,6 +92,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_007',
     accountNumber: '0036667788',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Emeka Onyekachi',
     customerId: 'cust_007',
     status: 'active',
@@ -88,6 +106,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_008',
     accountNumber: '0038889900',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Halima Musa',
     customerId: 'cust_008',
     status: 'active',
@@ -100,6 +120,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_009',
     accountNumber: '0031112233',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Chidi Okeke',
     customerId: 'cust_009',
     status: 'active',
@@ -112,6 +134,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_010',
     accountNumber: '0033334455',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Amaka Igwe',
     customerId: 'cust_010',
     status: 'active',
@@ -124,6 +148,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_011',
     accountNumber: '0035556677',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Yakubu Ibrahim',
     customerId: 'cust_011',
     status: 'active',
@@ -136,6 +162,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_012',
     accountNumber: '0037778899',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Chioma Dike',
     customerId: 'cust_012',
     status: 'active',
@@ -148,6 +176,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_013',
     accountNumber: '0039990011',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Musa Garba',
     customerId: 'cust_013',
     status: 'pending',
@@ -160,6 +190,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_014',
     accountNumber: '0032221100',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Fatima Bello',
     customerId: 'cust_014',
     status: 'pending',
@@ -172,6 +204,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_015',
     accountNumber: '0034443322',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Sunday Okonkwo',
     customerId: 'cust_015',
     status: 'frozen',
@@ -184,6 +218,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_016',
     accountNumber: '0036665544',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Blessing Obi',
     customerId: 'cust_016',
     status: 'frozen',
@@ -196,6 +232,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_017',
     accountNumber: '0038887766',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Olumide Akin',
     customerId: 'cust_017',
     status: 'closed',
@@ -208,6 +246,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_018',
     accountNumber: '0031110000',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Kemi Adeleke',
     customerId: 'cust_018',
     status: 'flagged',
@@ -220,6 +260,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_019',
     accountNumber: '0033332211',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Ahmed Suleiman',
     customerId: 'cust_019',
     status: 'flagged',
@@ -232,6 +274,8 @@ export const mockAccounts: Account[] = [
   {
     id: 'acc_020',
     accountNumber: '0035554433',
+    bankName: BANK_NAME,
+    bankCode: BANK_CODE,
     customerName: 'Grace Onyemachi',
     customerId: 'cust_020',
     status: 'resolved',

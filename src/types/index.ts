@@ -20,6 +20,8 @@ export type ToastType = 'success' | 'error' | 'warning' | 'info'
 export interface Account {
   id: string
   accountNumber: string
+  bankName: string
+  bankCode: string
   customerName: string
   customerId: string
   status: AccountStatus
@@ -56,9 +58,17 @@ export interface WebhookEvent {
   processedAt: string | null
 }
 
+export interface Merchant {
+  id: string
+  name: string
+  email: string
+  createdAt: string
+}
+
 export interface ApiKey {
   id: string
   key: string
+  label: string | null
   createdAt: string
   lastUsed: string | null
 }

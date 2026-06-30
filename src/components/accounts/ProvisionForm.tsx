@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Select, SelectItem, NumberInput, Button } from '@tremor/react'
-import { customerNameRules, customerIdRules } from '../../utils/validators'
+import { Button } from '@tremor/react'
+import { customerNameRules } from '../../utils/validators'
 import { KYC_TIERS } from '../../utils/constants'
 import type { KycTier, ProvisionPayload } from '../../types'
 import type { ReactNode } from 'react'
@@ -24,7 +23,7 @@ function Field({ label, error, children }: FieldProps) {
 
 interface ProvisionFormData {
   customerName: string
-  customerId: string
+  kycTier: KycTier
   initialDeposit?: number
 }
 
@@ -38,14 +37,17 @@ export function ProvisionForm({ onSubmit, isLoading, onCancel }: ProvisionFormPr
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
-  } = useForm<ProvisionFormData>()
-
-  const [kycTier, setKycTier] = useState<KycTier>('tier1')
+  } = useForm<ProvisionFormData>({ defaultValues: { kycTier: 'tier1' } })
 
   const submit = handleSubmit((data: ProvisionFormData) => {
-    onSubmit({ ...data, kycTier })
+    onSubmit({
+      customerName: data.customerName,
+      // Auto-generate customer ID — not shown to the user
+      customerId: `cust_${crypto.randomUUID().slice(0, 8)}`,
+      kycTier: data.kycTier,
+      initialDeposit: data.initialDeposit,
+    })
   })
 
   return (
@@ -58,30 +60,18 @@ export function ProvisionForm({ onSubmit, isLoading, onCancel }: ProvisionFormPr
         />
       </Field>
 
-      <Field label="Customer ID" error={errors.customerId?.message}>
-        <input
-          {...register('customerId', customerIdRules)}
-          placeholder="e.g. cust_abc123"
-          className="w-full border border-gray-300 rounded-tremor-small px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-mid"
-        />
-      </Field>
-
-      <Field label="KYC Tier">
-        <Select value={kycTier} onValueChange={(v) => setKycTier(v as KycTier)}>
+      <Field label="KYC Tier" error={errors.kycTier?.message}>
+        {/* Native <select> avoids z-index conflicts with the Modal overlay */}
+        <select
+          {...register('kycTier', { required: 'KYC tier is required' })}
+          className="w-full border border-gray-300 rounded-tremor-small px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-mid bg-white"
+        >
           {Object.entries(KYC_TIERS).map(([key, { label, limit }]) => (
-            <SelectItem key={key} value={key}>
+            <option key={key} value={key}>
               {label} — {limit}
-            </SelectItem>
+            </option>
           ))}
-        </Select>
-      </Field>
-
-      <Field label="Initial Deposit (₦, optional)" error={errors.initialDeposit?.message}>
-        <NumberInput
-          placeholder="0.00"
-          min={0}
-          onValueChange={(v) => setValue('initialDeposit', v)}
-        />
+        </select>
       </Field>
 
       <div className="flex justify-end gap-3 pt-2">
@@ -93,6 +83,7 @@ export function ProvisionForm({ onSubmit, isLoading, onCancel }: ProvisionFormPr
         <Button
           type="submit"
           loading={isLoading}
+          disabled={isLoading}
           className="bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold"
         >
           Provision Account

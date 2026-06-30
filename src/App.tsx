@@ -11,6 +11,7 @@ declare module '@tanstack/react-query' {
   }
 }
 
+const Onboarding    = lazy(() => import('./pages/Onboarding'))
 const Dashboard    = lazy(() => import('./pages/Dashboard'))
 const Accounts     = lazy(() => import('./pages/Accounts'))
 const AccountDetail = lazy(() => import('./pages/AccountDetail'))
@@ -48,6 +49,7 @@ export default function App() {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/onboarding" element={<Suspense fallback={<div className="min-h-screen bg-gray-50" />}><Onboarding /></Suspense>} />
             <Route path="/" element={<AppShell />}>
               <Route index element={<Suspense fallback={<PageFallback />}><Dashboard /></Suspense>} />
               <Route path="accounts" element={<Suspense fallback={<PageFallback />}><Accounts /></Suspense>} />

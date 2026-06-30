@@ -6,7 +6,7 @@ import {
   Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell,
   List, ListItem, TextInput,
 } from '@tremor/react'
-import { Copy, Check, AlertTriangle, ArrowLeft } from 'lucide-react'
+import { Copy, Check, AlertTriangle, ArrowLeft, Share2 } from 'lucide-react'
 import { AccountStatusBadge } from '../components/accounts/AccountStatusBadge'
 import { TransactionTable } from '../components/transactions/TransactionTable'
 import { WebhookEventTable } from '../components/webhooks/WebhookEventTable'
@@ -74,6 +74,7 @@ export default function AccountDetail() {
 
   const [closeOpen, setCloseOpen] = useState(false)
   const [newName, setNewName] = useState('')
+  const { copy: copyShare, copied: sharedCopied } = useCopyToClipboard()
 
   const transactions = txnsData?.data ?? []
   const webhooks = webhooksData?.data ?? []
@@ -133,13 +134,25 @@ export default function AccountDetail() {
                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               </button>
             </Flex>
-            <Title>{account.customerName}</Title>
+            {account.bankName && (
+              <Text className="text-sm text-gray-500 mt-0.5">{account.bankName}</Text>
+            )}
+            <Title className="mt-1">{account.customerName}</Title>
             <Text className="text-xs mt-1 text-gray-400">ID: {account.customerId}</Text>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <AccountStatusBadge status={account.status} />
             <Badge color="sky">{KYC_TIERS[account.kycTier]?.label}</Badge>
             <Text className="text-xs text-gray-400">Created {formatRelativeTime(account.createdAt)}</Text>
+            <button
+              onClick={() => copyShare(`Account: ${account.accountNumber} | Bank: ${account.bankName} | Name: ${account.customerName}`)}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-brand-mid px-2 py-1 border border-gray-200 rounded-tremor-small transition-colors"
+              aria-label="Share payment details"
+            >
+              {sharedCopied
+                ? <><Check className="w-3.5 h-3.5 text-green-500" /><span className="text-green-600">Copied!</span></>
+                : <><Share2 className="w-3.5 h-3.5" /><span>Share details</span></>}
+            </button>
           </div>
         </Flex>
 
