@@ -17,7 +17,7 @@ export function PageHeader({
     return (
         <div
             className={clsx(
-                'flex items-center justify-between mb-6',
+                'flex items-center justify-between flex-wrap gap-3 mb-6',
                 className,
             )}
         >

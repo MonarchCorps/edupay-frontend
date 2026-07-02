@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { NAV_ITEMS } from '../../utils/constants';
+import { NAV_ITEMS, USE_MOCK } from '../../utils/constants';
 import { Logo } from '../ui/Logo';
+import { useMe } from '../../hooks/useAuth';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -24,6 +25,10 @@ interface SidebarProps {
 export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     const mainItems = NAV_ITEMS.filter((i) => !i.bottom);
     const bottomItems = NAV_ITEMS.filter((i) => i.bottom);
+    const { data: merchant } = useMe();
+    const identity = USE_MOCK
+        ? { name: 'Demo Merchant', email: 'mock data — no backend' }
+        : merchant;
 
     return (
         <>
@@ -72,7 +77,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                     </ul>
                 </nav>
 
-                <div className="px-3 pb-6 border-t border-white/10 pt-4">
+                <div className="px-3 pb-4 border-t border-white/10 pt-4">
                     {bottomItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -91,6 +96,28 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                             {item.label}
                         </NavLink>
                     ))}
+
+                    {identity && (
+                        <div className="flex items-center gap-2.5 px-3 pt-4 mt-3 border-t border-white/10">
+                            <div className="w-7 h-7 rounded-full bg-accent-gold/20 text-accent-gold flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                                {identity.name
+                                    .trim()
+                                    .split(/\s+/)
+                                    .slice(0, 2)
+                                    .map((w) => w[0])
+                                    .join('')
+                                    .toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-xs font-semibold text-white/85 truncate">
+                                    {identity.name}
+                                </p>
+                                <p className="text-[11px] text-white/40 truncate">
+                                    {identity.email}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </aside>
         </>

@@ -48,10 +48,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
 }
 
 const TOAST_STYLES: Record<ToastType, string> = {
-    success: 'bg-green-600',
-    error: 'bg-red-600',
-    warning: 'bg-yellow-500',
-    info: 'bg-brand-mid',
+    success: 'bg-success',
+    error: 'bg-error',
+    warning: 'bg-[#C0863D]',
+    info: 'bg-teal-mid',
 };
 
 interface ToastListProps {
@@ -66,12 +66,12 @@ function ToastList({ toasts, dismiss }: ToastListProps) {
             {toasts.map((t) => (
                 <div
                     key={t.id}
-                    className={`flex items-center justify-between gap-3 px-4 py-3 rounded-tremor-default text-white text-sm font-medium shadow-tremor-dropdown ${TOAST_STYLES[t.type] ?? TOAST_STYLES.info}`}
+                    className={`toast-enter flex items-center justify-between gap-3 px-4 py-3 rounded-tremor-default text-paper text-sm font-medium shadow-tremor-dropdown ${TOAST_STYLES[t.type] ?? TOAST_STYLES.info}`}
                 >
                     <span>{t.message}</span>
                     <button
                         onClick={() => dismiss(t.id)}
-                        className="text-white/80 hover:text-white flex-shrink-0"
+                        className="text-paper/80 hover:text-paper flex-shrink-0"
                         aria-label="Dismiss notification"
                     >
                         ✕

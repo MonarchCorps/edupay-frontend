@@ -2,12 +2,24 @@ import { useLocation } from 'react-router-dom';
 import { Bell, Menu } from 'lucide-react';
 import { NAV_ITEMS } from '../../utils/constants';
 import { useEnvironment } from '../../hooks/useEnvironment';
+import { useMe } from '../../hooks/useAuth';
 
 function getPageTitle(pathname: string): string {
     const match = NAV_ITEMS.find((item) =>
         item.path === '/' ? pathname === '/' : pathname.startsWith(item.path),
     );
     return match?.label ?? 'EduPay';
+}
+
+function getInitials(name: string | undefined): string {
+    if (!name) return 'EP';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'EP';
+    return parts
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join('')
+        .toUpperCase();
 }
 
 interface TopbarProps {
@@ -18,6 +30,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     const { pathname } = useLocation();
     const title = getPageTitle(pathname);
     const { mode, toggleMode } = useEnvironment();
+    const { data: merchant } = useMe();
 
     return (
         <header className="sticky top-0 z-40 bg-[#FAF7F0] border-b border-teal-mid/10 h-14 flex items-center px-4 md:px-6 gap-4">
@@ -57,8 +70,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 <div
                     className="w-8 h-8 rounded-full bg-brand-mid flex items-center justify-center text-paper text-xs font-bold flex-shrink-0"
                     aria-label="User avatar"
+                    title={merchant?.name}
                 >
-                    DK
+                    {getInitials(merchant?.name)}
                 </div>
             </div>
         </header>

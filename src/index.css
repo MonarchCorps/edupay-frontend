@@ -39,3 +39,46 @@ body {
   outline: 2px solid var(--accent-gold);
   outline-offset: 2px;
 }
+
+/* Text selection picks up the brand accent instead of the browser default. */
+::selection {
+  background-color: color-mix(in srgb, var(--accent-gold) 35%, transparent);
+}
+
+/* Slim, palette-matched scrollbars on scrollable code/payload surfaces. */
+pre::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+pre::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--teal-mid) 30%, transparent);
+  border-radius: 9999px;
+}
+pre::-webkit-scrollbar-track,
+.overflow-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Toast enter — a short rise-and-fade, matching the "subtle, purposeful
+   transitions only" rule. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.toast-enter {
+  animation: toast-in 150ms ease-out;
+}

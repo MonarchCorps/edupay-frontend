@@ -170,7 +170,10 @@ interface EndpointCardProps {
 function EndpointCard({ endpoint }: EndpointCardProps) {
     const [open, setOpen] = useState(false);
     return (
-        <Card className="cursor-pointer" onClick={() => setOpen((o) => !o)}>
+        <Card
+            className="cursor-pointer transition-shadow hover:shadow-tremor-card"
+            onClick={() => setOpen((o) => !o)}
+        >
             <div className="flex items-center gap-3">
                 <Pill
                     tone={METHOD_TONE[endpoint.method] ?? 'neutral'}

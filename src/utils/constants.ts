@@ -22,40 +22,42 @@ export const ACCOUNT_STATUSES: Record<
     AccountStatus,
     { label: string; colour: string; tremorColour: Color; tone: Tone }
 > = {
+    // tremorColour only drives charts (donut legend); softened variants of
+    // each hue keep the chart in step with the muted Pill palette.
     pending: {
         label: 'Pending',
         colour: 'yellow',
-        tremorColour: 'yellow',
+        tremorColour: 'amber',
         tone: 'gold',
     },
     active: {
         label: 'Active',
         colour: 'green',
-        tremorColour: 'green',
+        tremorColour: 'emerald',
         tone: 'success',
     },
     frozen: {
         label: 'Frozen',
         colour: 'blue',
-        tremorColour: 'blue',
+        tremorColour: 'cyan',
         tone: 'info',
     },
     closed: {
         label: 'Closed',
         colour: 'gray',
-        tremorColour: 'gray',
+        tremorColour: 'stone',
         tone: 'neutral',
     },
     flagged: {
         label: 'Flagged',
         colour: 'red',
-        tremorColour: 'red',
+        tremorColour: 'rose',
         tone: 'error',
     },
     resolved: {
         label: 'Resolved',
         colour: 'green',
-        tremorColour: 'green',
+        tremorColour: 'teal',
         tone: 'neutral',
     },
 };
