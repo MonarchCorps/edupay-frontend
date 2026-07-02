@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { getStoredApiKey, getActiveMode } from '../../api/auth';
+import { getSessionToken } from '../../api/auth';
 import { USE_MOCK } from '../../utils/constants';
 
 export function AppShell() {
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    // In live mode, require an API key for the active mode — send
-    // unauthenticated visitors to onboarding
-    if (!USE_MOCK && !getStoredApiKey(getActiveMode())) {
+    // In live mode, require a signed-in session — send unauthenticated
+    // visitors to onboarding
+    if (!USE_MOCK && !getSessionToken()) {
         return <Navigate to="/onboarding" replace />;
     }
 

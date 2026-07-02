@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 import { API_BASE_URL } from '../utils/constants';
-import { getActiveMode, getStoredApiKey, clearStoredApiKey } from '../utils/environment';
+import { getActiveMode } from '../utils/environment';
+import { getSessionToken, clearSessionToken } from '../utils/session';
 import type { ApiError } from '../types';
 
 const api = axios.create({
@@ -9,8 +10,12 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const key = getStoredApiKey(getActiveMode());
-    if (key) config.headers.Authorization = `Bearer ${key}`;
+    const token = getSessionToken();
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    // A session token carries no environment of its own (unlike an API key),
+    // so the active sandbox/live mode rides along as a query param. Harmless
+    // on endpoints that don't use it.
+    config.params = { ...config.params, environment: getActiveMode() };
     return config;
 });
 
@@ -36,8 +41,8 @@ api.interceptors.response.use(
         }>,
     ) => {
         if (err.response?.status === 401) {
-            clearStoredApiKey(getActiveMode());
-            window.location.href = '/settings';
+            clearSessionToken();
+            window.location.href = '/onboarding';
         }
         const body = err.response?.data;
         // Backend wraps errors as { success: false, error: { code, message } }

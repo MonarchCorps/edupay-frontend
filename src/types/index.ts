@@ -70,6 +70,11 @@ export interface Merchant {
     createdAt: string;
 }
 
+export interface SessionResponse {
+    token: string;
+    merchant: Merchant;
+}
+
 export interface ApiKey {
     id: string;
     key: string;

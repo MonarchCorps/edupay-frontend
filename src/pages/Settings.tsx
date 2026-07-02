@@ -6,54 +6,19 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Pill } from '../components/ui/Pill';
+import { NewKeyModal } from '../components/ui/NewKeyModal';
 import {
     useApiKeys,
     useGenerateApiKey,
     useRevokeApiKey,
 } from '../hooks/useApiKeys';
+import { useMe } from '../hooks/useAuth';
 import { maskApiKey, formatDateTime } from '../utils/formatters';
-import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { useEnvironment } from '../hooks/useEnvironment';
-import { clearStoredApiKey } from '../api/auth';
+import { clearSessionToken } from '../api/auth';
+import { USE_MOCK } from '../utils/constants';
 import { clsx } from 'clsx';
 import type { ApiKey, Environment } from '../types';
-
-interface NewKeyModalProps {
-    apiKey: string | null;
-    onClose: () => void;
-}
-
-function NewKeyModal({ apiKey, onClose }: NewKeyModalProps) {
-    const { copy, copied } = useCopyToClipboard();
-    return (
-        <Modal
-            isOpen={!!apiKey}
-            onClose={onClose}
-            title="Your New API Key"
-            size="md"
-        >
-            <div className="space-y-4">
-                <div className="bg-accent-light border border-accent-gold/30 rounded-tremor-small p-3">
-                    <p className="mono-value text-sm break-all text-brand-dark font-medium">
-                        {apiKey}
-                    </p>
-                </div>
-                <div className="flex justify-between items-center">
-                    <Text className="text-error text-sm font-medium">
-                        ⚠ This key will not be shown again. Copy it now.
-                    </Text>
-                    <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => apiKey && copy(apiKey)}
-                    >
-                        {copied ? 'Copied!' : 'Copy'}
-                    </Button>
-                </div>
-            </div>
-        </Modal>
-    );
-}
 
 interface RowProps {
     label: string;
@@ -90,6 +55,7 @@ const MODE_OPTIONS: Array<{
 export default function Settings() {
     const navigate = useNavigate();
     const { mode } = useEnvironment();
+    const { data: merchant } = useMe();
     const { data: keys = [], isLoading } = useApiKeys();
     const generate = useGenerateApiKey();
     const revoke = useRevokeApiKey();
@@ -98,8 +64,7 @@ export default function Settings() {
     const [keyMode, setKeyMode] = useState<Environment>('sandbox');
 
     const handleLogout = () => {
-        clearStoredApiKey('sandbox');
-        clearStoredApiKey('live');
+        clearSessionToken();
         navigate('/onboarding', { replace: true });
     };
 
@@ -214,9 +179,31 @@ export default function Settings() {
             <Card>
                 <Title className="mb-4">Account Info</Title>
                 <div className="space-y-3 text-sm">
-                    <Row label="Merchant Name" value="EduPay Infrastructure" />
-                    <Row label="Account ID" value="merchant_edupay_2026" mono />
-                    <Row label="Created" value="1 Jan 2026" />
+                    <Row
+                        label="Merchant Name"
+                        value={
+                            USE_MOCK
+                                ? 'Mock Merchant'
+                                : (merchant?.name ?? '—')
+                        }
+                    />
+                    <Row
+                        label="Email"
+                        value={USE_MOCK ? 'mock@edupay.dev' : (merchant?.email ?? '—')}
+                    />
+                    <Row
+                        label="Merchant ID"
+                        value={USE_MOCK ? '—' : (merchant?.id ?? '—')}
+                        mono
+                    />
+                    <Row
+                        label="Created"
+                        value={
+                            USE_MOCK || !merchant
+                                ? '—'
+                                : formatDateTime(merchant.createdAt)
+                        }
+                    />
                     <Row
                         label="Active Mode"
                         value={mode === 'live' ? 'Live' : 'Sandbox'}
@@ -231,8 +218,9 @@ export default function Settings() {
                             Sign Out
                         </Title>
                         <Text className="text-teal-mid/55 text-sm mt-0.5">
-                            Clears your API key from this browser. You'll need
-                            to re-enter it to access the dashboard.
+                            Ends your dashboard session on this browser.
+                            You'll need to sign in again to access the
+                            dashboard.
                         </Text>
                     </div>
                     <Button

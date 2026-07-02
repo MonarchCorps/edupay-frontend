@@ -47,6 +47,12 @@ export async function getTransactions(
     return data;
 }
 
+// Mock-mode only: lets api/sandbox.ts add a simulated transaction without a
+// backend.
+export function _pushTransactionMock(txn: Transaction) {
+    _transactions = [txn, ..._transactions];
+}
+
 export async function getTransaction(id: string): Promise<Transaction | null> {
     if (USE_MOCK) {
         await sleep(200);

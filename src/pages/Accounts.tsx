@@ -8,11 +8,12 @@ import {
     TextInput,
     Flex,
 } from '@tremor/react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Zap } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Modal } from '../components/ui/Modal';
 import { AccountTable } from '../components/accounts/AccountTable';
 import { ProvisionForm } from '../components/accounts/ProvisionForm';
+import { SimulateWebhookForm } from '../components/accounts/SimulateWebhookForm';
 import {
     useAccounts,
     useProvisionAccount,
@@ -20,6 +21,7 @@ import {
     useUnfreezeAccount,
     useCloseAccount,
 } from '../hooks/useAccounts';
+import { useEnvironment } from '../hooks/useEnvironment';
 import { ACCOUNT_STATUSES, KYC_TIERS } from '../utils/constants';
 import { useDebounce } from '../hooks/useDebounce';
 import type {
@@ -32,7 +34,9 @@ import type {
 
 export default function Accounts() {
     const [searchParams] = useSearchParams();
+    const { mode } = useEnvironment();
     const [provisionOpen, setProvisionOpen] = useState(false);
+    const [simulateOpen, setSimulateOpen] = useState(false);
     const [closeTarget, setCloseTarget] = useState<Account | null>(null);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState(
@@ -79,13 +83,24 @@ export default function Accounts() {
                 title="Virtual Accounts"
                 subtitle="Manage provisioned DVA accounts"
                 action={
-                    <Button
-                        onClick={() => setProvisionOpen(true)}
-                        icon={Plus}
-                        className="bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold"
-                    >
-                        Provision Account
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        {mode === 'sandbox' && (
+                            <Button
+                                variant="secondary"
+                                onClick={() => setSimulateOpen(true)}
+                                icon={Zap}
+                            >
+                                Simulate Webhook
+                            </Button>
+                        )}
+                        <Button
+                            onClick={() => setProvisionOpen(true)}
+                            icon={Plus}
+                            className="bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold"
+                        >
+                            Provision Account
+                        </Button>
+                    </div>
                 }
             />
 
@@ -146,6 +161,18 @@ export default function Accounts() {
                     />
                 )}
             </Card>
+
+            <Modal
+                isOpen={simulateOpen}
+                onClose={() => setSimulateOpen(false)}
+                title="Simulate Webhook"
+                size="md"
+            >
+                <SimulateWebhookForm
+                    onDone={() => setSimulateOpen(false)}
+                    onCancel={() => setSimulateOpen(false)}
+                />
+            </Modal>
 
             <Modal
                 isOpen={provisionOpen}

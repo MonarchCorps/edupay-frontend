@@ -132,6 +132,31 @@ export async function closeAccount(id: string): Promise<Account | undefined> {
     return data;
 }
 
+// Mock-mode only: lets api/sandbox.ts read/flag an account without a
+// backend, mirroring what reconciliation.js does for a real misdirected
+// payment.
+export function _getAccountMock(id: string): Account | undefined {
+    return _accounts.find((a) => a.id === id);
+}
+
+export function _flagAccountMock(id: string) {
+    _accounts = _accounts.map((a) =>
+        a.id === id ? { ...a, status: 'flagged' } : a,
+    );
+}
+
+export function _creditAccountMock(id: string, amountKobo: number) {
+    _accounts = _accounts.map((a) =>
+        a.id === id
+            ? {
+                  ...a,
+                  balance: a.balance + amountKobo,
+                  lastCreditAt: new Date().toISOString(),
+              }
+            : a,
+    );
+}
+
 // Mock-mode only: mirrors what the backend does when a misdirected
 // transaction is resolved (allocate credits the balance, both actions
 // unflag the account) so the demo stays consistent without a live backend.

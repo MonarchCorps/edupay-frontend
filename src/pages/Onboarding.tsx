@@ -3,14 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Card, Button } from '@tremor/react';
 import { LogoMark } from '../components/ui/Logo';
-import {
-    registerMerchant,
-    bootstrapApiKey,
-    getMe,
-    setStoredApiKey,
-    setActiveMode,
-    detectModeFromKey,
-} from '../api/auth';
+import { NewKeyModal } from '../components/ui/NewKeyModal';
+import { registerMerchant, bootstrapApiKey, login, setSessionToken } from '../api/auth';
 import type { ApiError } from '../types';
 
 type Mode = 'register' | 'signin';
@@ -18,10 +12,13 @@ type Mode = 'register' | 'signin';
 interface RegisterData {
     name: string;
     email: string;
+    password: string;
+    confirmPassword: string;
 }
 
 interface SignInData {
-    apiKey: string;
+    email: string;
+    password: string;
 }
 
 interface FieldProps {
@@ -50,18 +47,34 @@ export default function Onboarding() {
     const [mode, setMode] = useState<Mode>('register');
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
+    const [newKey, setNewKey] = useState<string | null>(null);
+    const [pendingLogin, setPendingLogin] = useState<SignInData | null>(null);
 
     const registerForm = useForm<RegisterData>();
     const signinForm = useForm<SignInData>();
+
+    const completeLogin = async (email: string, password: string) => {
+        const { token } = await login(email, password);
+        setSessionToken(token);
+        navigate('/', { replace: true });
+    };
 
     const handleRegister = registerForm.handleSubmit(
         async (data: RegisterData) => {
             setIsLoading(true);
             setApiError(null);
             try {
-                const merchant = await registerMerchant(data.name, data.email);
-                await bootstrapApiKey(merchant.id);
-                navigate('/', { replace: true });
+                const merchant = await registerMerchant(
+                    data.name,
+                    data.email,
+                    data.password,
+                );
+                const key = await bootstrapApiKey(merchant.id);
+                // Show the merchant their first API key before continuing —
+                // it's only ever shown once. Login happens after they
+                // acknowledge it (see handleKeyModalClose).
+                setPendingLogin({ email: data.email, password: data.password });
+                setNewKey(key.key);
             } catch (err) {
                 setApiError(
                     (err as ApiError)?.message ??
@@ -72,17 +85,30 @@ export default function Onboarding() {
         },
     );
 
+    const handleKeyModalClose = async () => {
+        setNewKey(null);
+        if (!pendingLogin) return;
+        try {
+            await completeLogin(pendingLogin.email, pendingLogin.password);
+        } catch (err) {
+            setApiError(
+                (err as ApiError)?.message ??
+                    'Account created, but sign-in failed — please sign in manually.',
+            );
+            setIsLoading(false);
+            setMode('signin');
+        }
+    };
+
     const handleSignIn = signinForm.handleSubmit(async (data: SignInData) => {
         setIsLoading(true);
         setApiError(null);
         try {
-            await getMe(data.apiKey);
-            const keyMode = detectModeFromKey(data.apiKey);
-            setStoredApiKey(keyMode, data.apiKey);
-            setActiveMode(keyMode);
-            navigate('/', { replace: true });
+            await completeLogin(data.email, data.password);
         } catch (err) {
-            setApiError((err as ApiError)?.message ?? 'Invalid API key.');
+            setApiError(
+                (err as ApiError)?.message ?? 'Invalid email or password.',
+            );
             setIsLoading(false);
         }
     });
@@ -105,7 +131,7 @@ export default function Onboarding() {
                     <p className="text-sm text-teal-mid/60 mt-2">
                         {mode === 'register'
                             ? 'Create your merchant account to start issuing dedicated virtual accounts.'
-                            : 'Sign in with your API key to continue.'}
+                            : 'Sign in to continue.'}
                     </p>
                 </div>
 
@@ -164,6 +190,56 @@ export default function Onboarding() {
                                 />
                             </Field>
 
+                            <Field
+                                label="Password"
+                                error={
+                                    registerForm.formState.errors.password
+                                        ?.message
+                                }
+                            >
+                                <input
+                                    {...registerForm.register('password', {
+                                        required: 'Password is required',
+                                        minLength: {
+                                            value: 8,
+                                            message: 'Minimum 8 characters',
+                                        },
+                                    })}
+                                    type="password"
+                                    placeholder="At least 8 characters"
+                                    className={inputClass}
+                                    disabled={isLoading}
+                                    autoComplete="new-password"
+                                />
+                            </Field>
+
+                            <Field
+                                label="Confirm Password"
+                                error={
+                                    registerForm.formState.errors
+                                        .confirmPassword?.message
+                                }
+                            >
+                                <input
+                                    {...registerForm.register(
+                                        'confirmPassword',
+                                        {
+                                            required: 'Please confirm your password',
+                                            validate: (value: string) =>
+                                                value ===
+                                                    registerForm.getValues(
+                                                        'password',
+                                                    ) || 'Passwords do not match',
+                                        },
+                                    )}
+                                    type="password"
+                                    placeholder="Re-enter your password"
+                                    className={inputClass}
+                                    disabled={isLoading}
+                                    autoComplete="new-password"
+                                />
+                            </Field>
+
                             <Button
                                 type="submit"
                                 loading={isLoading}
@@ -177,21 +253,44 @@ export default function Onboarding() {
                     ) : (
                         <form onSubmit={handleSignIn} className="space-y-5">
                             <Field
-                                label="API Key"
+                                label="Email Address"
                                 error={
-                                    signinForm.formState.errors.apiKey?.message
+                                    signinForm.formState.errors.email?.message
                                 }
                             >
                                 <input
-                                    {...signinForm.register('apiKey', {
-                                        required: 'API key is required',
+                                    {...signinForm.register('email', {
+                                        required: 'Email is required',
+                                        pattern: {
+                                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                            message:
+                                                'Enter a valid email address',
+                                        },
                                     })}
-                                    type="password"
-                                    placeholder="ep_sandbox_..."
-                                    className={`${inputClass} mono-value`}
+                                    type="email"
+                                    placeholder="you@company.com"
+                                    className={inputClass}
                                     disabled={isLoading}
                                     autoFocus
-                                    autoComplete="off"
+                                />
+                            </Field>
+
+                            <Field
+                                label="Password"
+                                error={
+                                    signinForm.formState.errors.password
+                                        ?.message
+                                }
+                            >
+                                <input
+                                    {...signinForm.register('password', {
+                                        required: 'Password is required',
+                                    })}
+                                    type="password"
+                                    placeholder="Your password"
+                                    className={inputClass}
+                                    disabled={isLoading}
+                                    autoComplete="current-password"
                                 />
                             </Field>
 
@@ -238,6 +337,12 @@ export default function Onboarding() {
                     Sandbox mode — no real money is processed.
                 </p>
             </div>
+
+            <NewKeyModal
+                apiKey={newKey}
+                onClose={handleKeyModalClose}
+                title="Your First API Key"
+            />
         </div>
     );
 }
