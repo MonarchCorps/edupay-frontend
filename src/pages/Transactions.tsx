@@ -24,7 +24,7 @@ export default function Transactions() {
                         {[1, 2, 3, 4, 5].map((i) => (
                             <div
                                 key={i}
-                                className="h-12 bg-gray-100 rounded animate-pulse"
+                                className="h-12 bg-teal-mid/5 rounded animate-pulse"
                             />
                         ))}
                     </div>

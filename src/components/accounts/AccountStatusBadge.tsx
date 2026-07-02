@@ -1,5 +1,5 @@
-import { Badge } from '@tremor/react';
 import { clsx } from 'clsx';
+import { Pill } from '../ui/Pill';
 import { ACCOUNT_STATUSES } from '../../utils/constants';
 import type { AccountStatus } from '../../types';
 
@@ -14,11 +14,11 @@ export function AccountStatusBadge({
 }: AccountStatusBadgeProps) {
     const config = ACCOUNT_STATUSES[status as AccountStatus] ?? {
         label: status,
-        tremorColour: 'gray' as const,
+        tone: 'neutral' as const,
     };
     return (
-        <Badge color={config.tremorColour} className={clsx(className)}>
+        <Pill tone={config.tone} className={clsx(className)}>
             {config.label}
-        </Badge>
+        </Pill>
     );
 }

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Title, Text, List, ListItem, Flex } from '@tremor/react';
-import { Key, Trash2, Plus, LogOut } from 'lucide-react';
+import { Key, Trash2, Plus, LogOut, FlaskConical, Globe } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Pill } from '../components/ui/Pill';
 import {
     useApiKeys,
     useGenerateApiKey,
@@ -12,8 +13,10 @@ import {
 } from '../hooks/useApiKeys';
 import { maskApiKey, formatDateTime } from '../utils/formatters';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
+import { useEnvironment } from '../hooks/useEnvironment';
 import { clearStoredApiKey } from '../api/auth';
-import type { ApiKey } from '../types';
+import { clsx } from 'clsx';
+import type { ApiKey, Environment } from '../types';
 
 interface NewKeyModalProps {
     apiKey: string | null;
@@ -30,13 +33,13 @@ function NewKeyModal({ apiKey, onClose }: NewKeyModalProps) {
             size="md"
         >
             <div className="space-y-4">
-                <div className="bg-accent-light border border-accent/30 rounded-tremor-small p-3">
-                    <p className="font-mono text-sm break-all text-gray-900 font-medium">
+                <div className="bg-accent-light border border-accent-gold/30 rounded-tremor-small p-3">
+                    <p className="mono-value text-sm break-all text-brand-dark font-medium">
                         {apiKey}
                     </p>
                 </div>
                 <div className="flex justify-between items-center">
-                    <Text className="text-red-600 text-sm font-medium">
+                    <Text className="text-error text-sm font-medium">
                         ⚠ This key will not be shown again. Copy it now.
                     </Text>
                     <Button
@@ -60,11 +63,13 @@ interface RowProps {
 
 function Row({ label, value, mono }: RowProps) {
     return (
-        <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-            <span className="text-gray-500 font-medium">{label}</span>
+        <div className="flex justify-between items-center py-2 border-b border-teal-mid/8 last:border-0">
+            <span className="text-teal-mid/55 font-medium">{label}</span>
             <span
                 className={
-                    mono ? 'font-mono text-xs text-gray-700' : 'text-gray-900'
+                    mono
+                        ? 'mono-value text-xs text-brand-dark'
+                        : 'text-brand-dark'
                 }
             >
                 {value}
@@ -73,21 +78,33 @@ function Row({ label, value, mono }: RowProps) {
     );
 }
 
+const MODE_OPTIONS: Array<{
+    value: Environment;
+    label: string;
+    icon: typeof FlaskConical;
+}> = [
+    { value: 'sandbox', label: 'Sandbox', icon: FlaskConical },
+    { value: 'live', label: 'Live', icon: Globe },
+];
+
 export default function Settings() {
     const navigate = useNavigate();
+    const { mode } = useEnvironment();
     const { data: keys = [], isLoading } = useApiKeys();
     const generate = useGenerateApiKey();
     const revoke = useRevokeApiKey();
     const [newKey, setNewKey] = useState<string | null>(null);
     const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
+    const [keyMode, setKeyMode] = useState<Environment>('sandbox');
 
     const handleLogout = () => {
-        clearStoredApiKey();
+        clearStoredApiKey('sandbox');
+        clearStoredApiKey('live');
         navigate('/onboarding', { replace: true });
     };
 
     const handleGenerate = async () => {
-        const result = await generate.mutateAsync();
+        const result = await generate.mutateAsync(keyMode);
         setNewKey(result.key);
     };
 
@@ -99,25 +116,53 @@ export default function Settings() {
             />
 
             <Card>
-                <Flex className="mb-4">
+                <Flex className="mb-2 flex-wrap gap-3">
                     <Title>API Keys</Title>
+                </Flex>
+
+                <div className="flex items-center justify-between flex-wrap gap-3 mb-5 p-3 rounded-tremor-small bg-teal-mid/5 border border-teal-mid/10">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-teal-mid/50 mb-1.5">
+                            Mode for new key
+                        </p>
+                        <div className="inline-flex rounded-tremor-small border border-teal-mid/15 overflow-hidden">
+                            {MODE_OPTIONS.map(({ value, label, icon: Icon }) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => setKeyMode(value)}
+                                    className={clsx(
+                                        'flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-accent-gold',
+                                        keyMode === value
+                                            ? value === 'live'
+                                                ? 'bg-success/15 text-success'
+                                                : 'bg-accent-gold/20 text-[#8A6423]'
+                                            : 'bg-transparent text-teal-mid/45 hover:text-teal-mid',
+                                    )}
+                                >
+                                    <Icon className="w-3.5 h-3.5" />
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <Button
                         size="sm"
                         icon={Plus}
                         loading={generate.isPending}
                         onClick={handleGenerate}
-                        className="bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold"
+                        className="bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold"
                     >
                         Generate New Key
                     </Button>
-                </Flex>
+                </div>
 
                 {isLoading ? (
                     <div className="space-y-2">
                         {[1, 2].map((i) => (
                             <div
                                 key={i}
-                                className="h-12 bg-gray-100 rounded animate-pulse"
+                                className="h-12 bg-teal-mid/5 rounded animate-pulse"
                             />
                         ))}
                     </div>
@@ -132,10 +177,21 @@ export default function Settings() {
                         {keys.map((k) => (
                             <ListItem key={k.id}>
                                 <div className="flex-1 min-w-0">
-                                    <code className="font-mono text-sm text-gray-900">
-                                        {maskApiKey(k.key)}
-                                    </code>
-                                    <p className="text-xs text-gray-400 mt-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <code className="mono-value text-sm text-brand-dark">
+                                            {maskApiKey(k.key)}
+                                        </code>
+                                        <Pill
+                                            tone={
+                                                k.environment === 'live'
+                                                    ? 'success'
+                                                    : 'gold'
+                                            }
+                                        >
+                                            {k.environment}
+                                        </Pill>
+                                    </div>
+                                    <p className="text-xs text-teal-mid/40 mt-0.5">
                                         Created {formatDateTime(k.createdAt)}
                                     </p>
                                 </div>
@@ -161,17 +217,20 @@ export default function Settings() {
                     <Row label="Merchant Name" value="EduPay Infrastructure" />
                     <Row label="Account ID" value="merchant_edupay_2026" mono />
                     <Row label="Created" value="1 Jan 2026" />
-                    <Row label="Plan" value="Developer (Sandbox)" />
+                    <Row
+                        label="Active Mode"
+                        value={mode === 'live' ? 'Live' : 'Sandbox'}
+                    />
                 </div>
             </Card>
 
-            <Card className="border border-red-100">
+            <Card className="border border-error/20">
                 <Flex>
                     <div>
-                        <Title className="text-red-700 text-base">
+                        <Title className="text-error text-base">
                             Sign Out
                         </Title>
-                        <Text className="text-gray-500 text-sm mt-0.5">
+                        <Text className="text-teal-mid/55 text-sm mt-0.5">
                             Clears your API key from this browser. You'll need
                             to re-enter it to access the dashboard.
                         </Text>
@@ -217,9 +276,9 @@ export default function Settings() {
                     </>
                 }
             >
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-teal-mid/70">
                     Revoking{' '}
-                    <code className="font-mono">
+                    <code className="mono-value">
                         {maskApiKey(revokeTarget?.key)}
                     </code>{' '}
                     will immediately invalidate any requests using this key.

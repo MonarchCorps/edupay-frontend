@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { NAV_ITEMS } from '../../utils/constants';
+import { Logo } from '../ui/Logo';
 import * as Icons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -42,11 +43,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                         : '-translate-x-full md:translate-x-0',
                 )}
             >
-                <div className="px-5 py-6 flex items-center gap-2 flex-shrink-0">
-                    <span className="w-3 h-3 rounded-full bg-accent flex-shrink-0" />
-                    <span className="text-white font-bold text-xl tracking-tight">
-                        EduPay
-                    </span>
+                <div className="px-5 py-6 flex items-center flex-shrink-0">
+                    <Logo size={28} className="text-white" />
                 </div>
 
                 <nav className="flex-1 px-3 pb-4 overflow-y-auto">

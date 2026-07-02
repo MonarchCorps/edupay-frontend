@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 import {
     Card,
-    Metric,
-    Text,
     ProgressBar,
     Callout,
     Grid,
@@ -11,16 +9,84 @@ import {
     Title,
     Button,
 } from '@tremor/react';
-import { AlertTriangle, Zap, PlusCircle } from 'lucide-react';
+import {
+    AlertTriangle,
+    PlusCircle,
+    Users,
+    CheckCircle2,
+    Wallet,
+    Zap,
+} from 'lucide-react';
+import { clsx } from 'clsx';
 import { VolumeChart } from '../components/charts/VolumeChart';
 import { AccountStatusChart } from '../components/charts/AccountStatusChart';
 import { AccountTable } from '../components/accounts/AccountTable';
 import { WebhookEventTable } from '../components/webhooks/WebhookEventTable';
+import { LogoMark } from '../components/ui/Logo';
 import { useDashboard } from '../hooks/useDashboard';
 import { formatCurrency } from '../utils/formatters';
+import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 // suppress unused import warnings for Tremor layout components
 void Col;
+
+const TONE_CHIP: Record<'gold' | 'success' | 'error' | 'neutral', string> = {
+    gold: 'bg-accent-gold/15 text-[#8A6423]',
+    success: 'bg-success/15 text-success',
+    error: 'bg-error/15 text-error',
+    neutral: 'bg-teal-mid/10 text-teal-mid',
+};
+
+interface StatCardProps {
+    icon: LucideIcon;
+    tone: keyof typeof TONE_CHIP;
+    label: string;
+    value: ReactNode;
+    mono?: boolean;
+    hero?: boolean;
+    footer?: ReactNode;
+}
+
+function StatCard({
+    icon: Icon,
+    tone,
+    label,
+    value,
+    mono,
+    hero,
+    footer,
+}: StatCardProps) {
+    return (
+        <Card className={hero ? 'ring-1 ring-accent-gold/30' : undefined}>
+            <Flex alignItems="start" className="gap-3">
+                <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-wide text-teal-mid/50 font-semibold">
+                        {label}
+                    </p>
+                    <p
+                        className={clsx(
+                            'font-bold text-brand-dark mt-1.5 truncate',
+                            hero ? 'text-3xl' : 'text-2xl',
+                            mono && 'mono-value',
+                        )}
+                    >
+                        {value}
+                    </p>
+                    {footer}
+                </div>
+                <div
+                    className={clsx(
+                        'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0',
+                        TONE_CHIP[tone],
+                    )}
+                >
+                    <Icon className="w-4.5 h-4.5" />
+                </div>
+            </Flex>
+        </Card>
+    );
+}
 
 export default function Dashboard() {
     const { stats, isLoading } = useDashboard();
@@ -28,11 +94,11 @@ export default function Dashboard() {
     if (isLoading) {
         return (
             <div className="animate-pulse space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-48" />
+                <div className="h-8 bg-teal-mid/10 rounded w-48" />
                 <Grid numItemsMd={4} className="gap-4">
                     {[1, 2, 3, 4].map((i) => (
                         <Card key={i}>
-                            <div className="h-20 bg-gray-100 rounded" />
+                            <div className="h-20 bg-teal-mid/5 rounded" />
                         </Card>
                     ))}
                 </Grid>
@@ -56,20 +122,20 @@ export default function Dashboard() {
     if (totalAccounts === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-mid/10 rounded-2xl mb-6">
-                    <Zap className="w-8 h-8 text-brand-mid" />
+                <div className="mb-6 opacity-90">
+                    <LogoMark size={64} />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                <h2 className="text-xl font-semibold text-brand-dark mb-2">
                     No virtual accounts yet
                 </h2>
-                <p className="text-sm text-gray-500 mb-6 max-w-xs">
+                <p className="text-sm text-teal-mid/55 mb-6 max-w-xs">
                     Provision your first virtual account to start accepting
                     payments and tracking transactions.
                 </p>
                 <Link to="/accounts">
                     <Button
                         icon={PlusCircle}
-                        className="bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold"
+                        className="bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold"
                     >
                         Provision your first account
                     </Button>
@@ -101,41 +167,51 @@ export default function Dashboard() {
             )}
 
             <Grid numItemsMd={2} numItemsLg={4} className="gap-4">
-                <Card>
-                    <Text>Total Accounts</Text>
-                    <Metric>{totalAccounts}</Metric>
-                </Card>
-                <Card>
-                    <Text>Active Accounts</Text>
-                    <Metric>{activeAccounts}</Metric>
-                    <ProgressBar
-                        value={activePercent}
-                        color="teal"
-                        className="mt-2"
-                    />
-                    <Text className="mt-1">{activePercent}% of total</Text>
-                </Card>
-                <Card>
-                    <Text>Total Volume (Credits)</Text>
-                    <Metric>{formatCurrency(totalVolume)}</Metric>
-                </Card>
-                <Card>
-                    <Text>Webhooks Today</Text>
-                    <Metric
-                        className={
-                            failedWebhooksToday > 0
-                                ? 'text-red-600'
-                                : 'text-green-600'
-                        }
-                    >
-                        {webhooksToday}
-                    </Metric>
-                    {failedWebhooksToday > 0 && (
-                        <Text className="text-red-500">
-                            {failedWebhooksToday} failed
-                        </Text>
-                    )}
-                </Card>
+                <StatCard
+                    icon={Users}
+                    tone="neutral"
+                    label="Total Accounts"
+                    value={totalAccounts}
+                />
+                <StatCard
+                    icon={CheckCircle2}
+                    tone="success"
+                    label="Active Accounts"
+                    value={activeAccounts}
+                    footer={
+                        <>
+                            <ProgressBar
+                                value={activePercent}
+                                color="emerald"
+                                className="mt-2"
+                            />
+                            <p className="text-xs text-teal-mid/50 mt-1">
+                                {activePercent}% of total
+                            </p>
+                        </>
+                    }
+                />
+                <StatCard
+                    icon={Wallet}
+                    tone="gold"
+                    hero
+                    label="Total Volume (Credits)"
+                    value={formatCurrency(totalVolume)}
+                    mono
+                />
+                <StatCard
+                    icon={Zap}
+                    tone={failedWebhooksToday > 0 ? 'error' : 'success'}
+                    label="Webhooks Today"
+                    value={webhooksToday}
+                    footer={
+                        failedWebhooksToday > 0 ? (
+                            <p className="text-xs text-error mt-1">
+                                {failedWebhooksToday} failed
+                            </p>
+                        ) : undefined
+                    }
+                />
             </Grid>
 
             <Grid numItemsMd={2} className="gap-4">
@@ -157,7 +233,7 @@ export default function Dashboard() {
                     <Title>Recent Accounts</Title>
                     <Link
                         to="/accounts"
-                        className="text-sm text-brand-mid hover:text-brand-dark font-medium"
+                        className="text-sm text-teal-mid hover:text-brand-dark font-medium"
                     >
                         View all →
                     </Link>
@@ -170,7 +246,7 @@ export default function Dashboard() {
                     <Title>Recent Webhook Events</Title>
                     <Link
                         to="/webhooks"
-                        className="text-sm text-brand-mid hover:text-brand-dark font-medium"
+                        className="text-sm text-teal-mid hover:text-brand-dark font-medium"
                     >
                         View all →
                     </Link>

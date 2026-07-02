@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 import { API_BASE_URL } from '../utils/constants';
+import { getActiveMode, getStoredApiKey, clearStoredApiKey } from '../utils/environment';
 import type { ApiError } from '../types';
 
 const api = axios.create({
@@ -8,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const key = localStorage.getItem('edupay_api_key');
+    const key = getStoredApiKey(getActiveMode());
     if (key) config.headers.Authorization = `Bearer ${key}`;
     return config;
 });
@@ -35,7 +36,7 @@ api.interceptors.response.use(
         }>,
     ) => {
         if (err.response?.status === 401) {
-            localStorage.removeItem('edupay_api_key');
+            clearStoredApiKey(getActiveMode());
             window.location.href = '/settings';
         }
         const body = err.response?.data;

@@ -14,7 +14,7 @@ export function VolumeChart({ data = [], className }: VolumeChartProps) {
             data={data}
             index="date"
             categories={['Volume']}
-            colors={['teal']}
+            colors={['brand']}
             valueFormatter={(v) => formatCurrency(v * 100)}
             showLegend={false}
             showAnimation

@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom';
-import { Badge } from '@tremor/react';
 import { Bell, Menu } from 'lucide-react';
 import { NAV_ITEMS } from '../../utils/constants';
+import { useEnvironment } from '../../hooks/useEnvironment';
 
 function getPageTitle(pathname: string): string {
     const match = NAV_ITEMS.find((item) =>
@@ -17,11 +17,12 @@ interface TopbarProps {
 export function Topbar({ onMenuClick }: TopbarProps) {
     const { pathname } = useLocation();
     const title = getPageTitle(pathname);
+    const { mode, toggleMode } = useEnvironment();
 
     return (
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-200 h-14 flex items-center px-4 md:px-6 gap-4">
+        <header className="sticky top-0 z-40 bg-[#FAF7F0] border-b border-teal-mid/10 h-14 flex items-center px-4 md:px-6 gap-4">
             <button
-                className="md:hidden text-gray-500 hover:text-gray-800 focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
+                className="md:hidden text-teal-mid/60 hover:text-brand-dark focus-visible:ring-2 focus-visible:ring-accent-gold rounded p-1 transition-colors"
                 onClick={onMenuClick}
                 aria-label="Open navigation menu"
             >
@@ -33,19 +34,28 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             </span>
 
             <div className="flex items-center gap-3">
-                <Badge color="yellow" size="sm">
-                    Sandbox
-                </Badge>
+                <button
+                    type="button"
+                    onClick={toggleMode}
+                    title="Switch between sandbox and live mode"
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-accent-gold ${
+                        mode === 'live'
+                            ? 'bg-success/15 text-success border-success/30 hover:bg-success/25'
+                            : 'bg-accent-gold/20 text-[#8A6423] border-accent-gold/30 hover:bg-accent-gold/30'
+                    }`}
+                >
+                    {mode === 'live' ? 'Live' : 'Sandbox'}
+                </button>
 
                 <button
-                    className="text-gray-400 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
+                    className="text-teal-mid/40 hover:text-teal-mid focus-visible:ring-2 focus-visible:ring-accent-gold rounded p-1 transition-colors"
                     aria-label="Notifications"
                 >
                     <Bell className="w-5 h-5" />
                 </button>
 
                 <div
-                    className="w-8 h-8 rounded-full bg-brand-mid flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                    className="w-8 h-8 rounded-full bg-brand-mid flex items-center justify-center text-paper text-xs font-bold flex-shrink-0"
                     aria-label="User avatar"
                 >
                     DK

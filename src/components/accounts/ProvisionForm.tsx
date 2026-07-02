@@ -1,7 +1,8 @@
 import { useForm } from 'react-hook-form';
-import { Button } from '@tremor/react';
+import { Button, Callout } from '@tremor/react';
 import { customerNameRules } from '../../utils/validators';
 import { KYC_TIERS } from '../../utils/constants';
+import { useEnvironment } from '../../hooks/useEnvironment';
 import type { KycTier, ProvisionPayload } from '../../types';
 import type { ReactNode } from 'react';
 
@@ -14,11 +15,11 @@ interface FieldProps {
 function Field({ label, error, children }: FieldProps) {
     return (
         <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-brand-dark/80">
                 {label}
             </label>
             {children}
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-error">{error}</p>}
         </div>
     );
 }
@@ -40,6 +41,7 @@ export function ProvisionForm({
     isLoading,
     onCancel,
 }: ProvisionFormProps) {
+    const { mode } = useEnvironment();
     const {
         register,
         handleSubmit,
@@ -58,11 +60,24 @@ export function ProvisionForm({
 
     return (
         <form onSubmit={submit} className="space-y-4">
+            <Callout
+                title={
+                    mode === 'live'
+                        ? 'This account will be provisioned in Live mode'
+                        : 'This account will be provisioned in Sandbox mode'
+                }
+                color={mode === 'live' ? 'green' : 'yellow'}
+            >
+                {mode === 'live'
+                    ? 'A real Nomba virtual account will be created.'
+                    : 'A test account with a fabricated account number will be created — no real Nomba API calls are made.'}
+            </Callout>
+
             <Field label="Customer Name" error={errors.customerName?.message}>
                 <input
                     {...register('customerName', customerNameRules)}
                     placeholder="e.g. Chukwuemeka Okafor"
-                    className="w-full border border-gray-300 rounded-tremor-small px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-mid"
+                    className="w-full bg-[#FFFDF8] border border-teal-mid/20 rounded-tremor-small px-3 py-2 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-accent-gold transition-colors"
                 />
             </Field>
 
@@ -72,7 +87,7 @@ export function ProvisionForm({
                     {...register('kycTier', {
                         required: 'KYC tier is required',
                     })}
-                    className="w-full border border-gray-300 rounded-tremor-small px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-mid bg-white"
+                    className="w-full bg-[#FFFDF8] border border-teal-mid/20 rounded-tremor-small px-3 py-2 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-accent-gold transition-colors"
                 >
                     {Object.entries(KYC_TIERS).map(
                         ([key, { label, limit }]) => (
@@ -98,7 +113,7 @@ export function ProvisionForm({
                     type="submit"
                     loading={isLoading}
                     disabled={isLoading}
-                    className="bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold"
+                    className="bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold"
                 >
                     Provision Account
                 </Button>

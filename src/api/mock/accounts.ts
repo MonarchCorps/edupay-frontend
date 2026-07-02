@@ -4,7 +4,9 @@ import type { Account } from '../../types';
 const BANK_NAME = 'Wema Bank';
 const BANK_CODE = '035';
 
-export const mockAccounts: Account[] = [
+// Seeded demo data predates sandbox mode — tag it all 'live' so it only
+// shows up in the Live view; sandbox starts empty until you provision into it.
+const rawMockAccounts: Omit<Account, 'environment'>[] = [
     {
         id: 'acc_001',
         accountNumber: '0031234567',
@@ -286,3 +288,8 @@ export const mockAccounts: Account[] = [
         nombaRef: 'NMB-ACC-20250901-020',
     },
 ];
+
+export const mockAccounts: Account[] = rawMockAccounts.map((a) => ({
+    ...a,
+    environment: 'live',
+}));

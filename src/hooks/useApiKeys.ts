@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { generateApiKey, getApiKeys, revokeApiKey } from '../api/auth';
 import { useToast } from './useToast';
-import type { ApiError } from '../types';
+import type { ApiError, Environment } from '../types';
 
 export function useApiKeys() {
     return useQuery({
@@ -14,8 +14,12 @@ export function useApiKeys() {
 export function useGenerateApiKey() {
     const queryClient = useQueryClient();
     const { toast } = useToast();
-    return useMutation<Awaited<ReturnType<typeof generateApiKey>>, ApiError>({
-        mutationFn: generateApiKey,
+    return useMutation<
+        Awaited<ReturnType<typeof generateApiKey>>,
+        ApiError,
+        Environment
+    >({
+        mutationFn: (mode) => generateApiKey(mode),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['api-keys'] });
         },

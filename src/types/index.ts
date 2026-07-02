@@ -16,6 +16,8 @@ export type WebhookEventType =
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
+export type Environment = 'sandbox' | 'live';
+
 // ─── Entities ─────────────────────────────────────────────────────────────────
 
 export interface Account {
@@ -31,6 +33,7 @@ export interface Account {
     lastCreditAt: string | null;
     createdAt: string;
     nombaRef: string;
+    environment: Environment;
 }
 
 export interface Transaction {
@@ -46,6 +49,7 @@ export interface Transaction {
     nombaRef: string;
     createdAt: string;
     runningBalance?: number;
+    environment: Environment;
 }
 
 export interface WebhookEvent {
@@ -70,6 +74,7 @@ export interface ApiKey {
     id: string;
     key: string;
     label: string | null;
+    environment: Environment;
     createdAt: string;
     lastUsed: string | null;
 }

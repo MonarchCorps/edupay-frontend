@@ -82,7 +82,7 @@ export default function Accounts() {
                     <Button
                         onClick={() => setProvisionOpen(true)}
                         icon={Plus}
-                        className="bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold"
+                        className="bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold"
                     >
                         Provision Account
                     </Button>
@@ -133,7 +133,7 @@ export default function Accounts() {
                         {[1, 2, 3, 4, 5].map((i) => (
                             <div
                                 key={i}
-                                className="h-12 bg-gray-100 rounded animate-pulse"
+                                className="h-12 bg-teal-mid/5 rounded animate-pulse"
                             />
                         ))}
                     </div>
@@ -183,10 +183,13 @@ export default function Accounts() {
                     </>
                 }
             >
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-teal-mid/70">
                     Are you sure you want to close the account for{' '}
-                    <strong>{closeTarget?.customerName}</strong>? This action
-                    will sweep the remaining balance and cannot be undone.
+                    <strong className="text-brand-dark">
+                        {closeTarget?.customerName}
+                    </strong>
+                    ? This action will sweep the remaining balance and cannot
+                    be undone.
                 </p>
             </Modal>
         </div>

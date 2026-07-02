@@ -3,20 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --color-brand-dark:   #0D3D3D;
-  --color-brand-mid:    #1A6B6B;
-  --color-brand-light:  #E6F4F4;
-  --color-accent:       #D4AF37;
-  --color-accent-light: #FDF7E3;
-  --color-success:      #16A34A;
-  --color-error:        #DC2626;
-  --color-warning:      #D97706;
-  --color-info:         #2563EB;
+  --bg-content:  #F5F1E8; /* warm paper page background */
+  --bg-sidebar:  #0B211D; /* deep navy-teal, sidebar + dark surfaces */
+  --accent-gold: #D9A94E; /* primary accent — CTAs, focal financial data */
+  --teal-mid:    #1A3A32; /* borders, secondary surfaces, hover states */
+  --success:     #4C9A6A;
+  --error:       #C15B4A;
+  --warning:     #C0863D;
+  --info:        #3E7A8C;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #F9FAFB;
+  background-color: var(--bg-content);
+  color: var(--bg-sidebar);
   margin: 0;
 }
 
@@ -25,11 +25,17 @@ body {
   min-height: 100vh;
 }
 
-.btn-gold {
-  background-color: var(--color-accent) !important;
-  color: #111827 !important;
-  font-weight: 600;
+/* Financial/technical data: account numbers, balances, API keys, refs, IDs.
+   Combine with text-size utilities as needed. */
+.mono-value {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
-.btn-gold:hover {
-  background-color: #b8971f !important;
+
+/* Keyboard focus — visible everywhere, including native elements that don't
+   carry an explicit focus-visible utility class. */
+:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
 }

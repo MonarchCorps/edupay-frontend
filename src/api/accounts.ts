@@ -2,6 +2,7 @@ import { USE_MOCK } from '../utils/constants';
 import { sleep, generateId } from '../utils/helpers';
 import api from './axios';
 import { mockAccounts } from './mock';
+import { getActiveMode } from '../utils/environment';
 import type {
     Account,
     AccountParams,
@@ -17,7 +18,7 @@ export async function getAccounts(
 ): Promise<PaginatedResponse<Account>> {
     if (USE_MOCK) {
         await sleep(400);
-        let list = [..._accounts];
+        let list = _accounts.filter((a) => a.environment === getActiveMode());
         if (params.status)
             list = list.filter((a) => a.status === params.status);
         if (params.kycTier)
@@ -67,6 +68,7 @@ export async function provisionAccount(
             lastCreditAt: null,
             createdAt: new Date().toISOString(),
             nombaRef: `NMB-ACC-${Date.now()}`,
+            environment: getActiveMode(),
         };
         _accounts = [acc, ..._accounts];
         return acc;
@@ -128,6 +130,25 @@ export async function closeAccount(id: string): Promise<Account | undefined> {
     }
     const { data } = await api.post<Account>(`/accounts/${id}/close`);
     return data;
+}
+
+// Mock-mode only: mirrors what the backend does when a misdirected
+// transaction is resolved (allocate credits the balance, both actions
+// unflag the account) so the demo stays consistent without a live backend.
+export function _applyResolvedMisdirectedMock(
+    accountId: string,
+    action: 'allocate' | 'return',
+    amountKobo: number,
+) {
+    _accounts = _accounts.map((a) => {
+        if (a.id !== accountId) return a;
+        if (a.status !== 'flagged') return a;
+        return {
+            ...a,
+            status: 'active',
+            balance: action === 'allocate' ? a.balance + amountKobo : a.balance,
+        };
+    });
 }
 
 export async function getAccountStatement(

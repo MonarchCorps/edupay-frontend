@@ -1,9 +1,26 @@
-import { USE_MOCK } from '../utils/constants';
+import axios from 'axios';
+import { API_BASE_URL, USE_MOCK } from '../utils/constants';
 import { sleep, generateId } from '../utils/helpers';
 import api from './axios';
-import type { ApiKey, Merchant } from '../types';
+import {
+    getActiveMode,
+    setActiveMode,
+    getStoredApiKey,
+    setStoredApiKey,
+    clearStoredApiKey,
+    detectModeFromKey,
+} from '../utils/environment';
+import type { ApiError, ApiKey, Environment, Merchant } from '../types';
 
-const STORAGE_KEY = 'edupay_api_key';
+export {
+    getActiveMode,
+    setActiveMode,
+    getStoredApiKey,
+    setStoredApiKey,
+    clearStoredApiKey,
+    detectModeFromKey,
+};
+
 const MOCK_KEYS_KEY = 'edupay_mock_keys';
 
 function getMockKeys(): ApiKey[] {
@@ -20,23 +37,38 @@ function saveMockKeys(keys: ApiKey[]): void {
     localStorage.setItem(MOCK_KEYS_KEY, JSON.stringify(keys));
 }
 
-export function getStoredApiKey(): string | null {
-    return localStorage.getItem(STORAGE_KEY);
-}
-
-export function setStoredApiKey(key: string): void {
-    localStorage.setItem(STORAGE_KEY, key);
-}
-
-export function clearStoredApiKey(): void {
-    localStorage.removeItem(STORAGE_KEY);
-}
-
-export async function getMerchantByEmail(email: string): Promise<Merchant> {
-    const { data } = await api.get<Merchant>('/auth/merchants/by-email', {
-        params: { email },
-    });
-    return data;
+// Verifies an API key the user typed in on the sign-in form. Deliberately
+// bypasses the shared `api` instance: its interceptor would overwrite this
+// header with whatever (possibly stale/invalid) key is already in
+// localStorage, and would redirect to /settings on a 401 — wrong behavior
+// for "the key the user just typed didn't work, show an inline error."
+export async function getMe(apiKey: string): Promise<Merchant> {
+    try {
+        const res = await axios.get<{ success: boolean; data: Merchant }>(
+            `${API_BASE_URL}/auth/me`,
+            { headers: { Authorization: `Bearer ${apiKey}` } },
+        );
+        return res.data.data;
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            const body = err.response?.data as
+                | {
+                      error?: {
+                          code?: string;
+                          message?: string;
+                          details?: unknown;
+                      };
+                  }
+                | undefined;
+            const apiError: ApiError = {
+                code: body?.error?.code ?? 'UNKNOWN_ERROR',
+                message: body?.error?.message ?? 'Invalid API key',
+                details: body?.error?.details ?? null,
+            };
+            throw apiError;
+        }
+        throw err;
+    }
 }
 
 export async function registerMerchant(
@@ -55,7 +87,9 @@ export async function bootstrapApiKey(merchantId: string): Promise<ApiKey> {
         `/auth/merchants/${merchantId}/keys`,
         { label: 'Default key' },
     );
-    setStoredApiKey(data.key);
+    // Bootstrap always mints a sandbox key server-side.
+    setStoredApiKey('sandbox', data.key);
+    setActiveMode('sandbox');
     return data;
 }
 
@@ -68,24 +102,25 @@ export async function getApiKeys(): Promise<ApiKey[]> {
     return data;
 }
 
-export async function generateApiKey(): Promise<ApiKey> {
+export async function generateApiKey(mode: Environment): Promise<ApiKey> {
     if (USE_MOCK) {
         await sleep(600);
-        const raw = `sk_sandbox_${generateId().replace(/-/g, '').slice(0, 24)}`;
+        const raw = `ep_${mode}_${generateId().replace(/-/g, '').slice(0, 24)}`;
         const entry: ApiKey = {
             id: generateId(),
             key: raw,
             label: null,
+            environment: mode,
             createdAt: new Date().toISOString(),
             lastUsed: null,
         };
         const keys = getMockKeys();
         saveMockKeys([entry, ...keys]);
-        setStoredApiKey(raw);
+        setStoredApiKey(mode, raw);
         return entry;
     }
-    const { data } = await api.post<ApiKey>('/auth/keys');
-    setStoredApiKey(data.key);
+    const { data } = await api.post<ApiKey>('/auth/keys', { mode });
+    setStoredApiKey(mode, data.key);
     return data;
 }
 

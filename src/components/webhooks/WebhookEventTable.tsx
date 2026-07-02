@@ -6,16 +6,19 @@ import {
     TableBody,
     TableRow,
     TableCell,
-    Badge,
 } from '@tremor/react';
 import { Zap } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 import { Modal } from '../ui/Modal';
 import { WebhookPayloadViewer } from '../ui/WebhookPayloadViewer';
+import { Pill } from '../ui/Pill';
 import { ReplayButton } from './ReplayButton';
 import { formatDateTime, truncateString } from '../../utils/formatters';
 import { clsx } from 'clsx';
 import type { WebhookEvent } from '../../types';
+
+const HEAD_CELL = 'py-3 text-xs uppercase tracking-wide text-teal-mid/50';
+const BODY_CELL = 'py-3.5';
 
 interface WebhookEventTableProps {
     events?: WebhookEvent[];
@@ -44,12 +47,24 @@ export function WebhookEventTable({
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableHeaderCell>Received At</TableHeaderCell>
-                            <TableHeaderCell>Event Type</TableHeaderCell>
-                            <TableHeaderCell>Account</TableHeaderCell>
-                            <TableHeaderCell>Processed</TableHeaderCell>
-                            <TableHeaderCell>Error</TableHeaderCell>
-                            <TableHeaderCell>Actions</TableHeaderCell>
+                            <TableHeaderCell className={HEAD_CELL}>
+                                Received At
+                            </TableHeaderCell>
+                            <TableHeaderCell className={HEAD_CELL}>
+                                Event Type
+                            </TableHeaderCell>
+                            <TableHeaderCell className={HEAD_CELL}>
+                                Account
+                            </TableHeaderCell>
+                            <TableHeaderCell className={HEAD_CELL}>
+                                Processed
+                            </TableHeaderCell>
+                            <TableHeaderCell className={HEAD_CELL}>
+                                Error
+                            </TableHeaderCell>
+                            <TableHeaderCell className={HEAD_CELL}>
+                                Actions
+                            </TableHeaderCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -58,52 +73,58 @@ export function WebhookEventTable({
                                 key={event.id}
                                 className={clsx(
                                     'transition-colors',
-                                    event.error && 'bg-red-50/50',
+                                    event.error && 'bg-error/[0.04]',
                                 )}
                             >
-                                <TableCell className="text-gray-500 text-sm whitespace-nowrap">
+                                <TableCell
+                                    className={clsx(
+                                        BODY_CELL,
+                                        'text-teal-mid/50 text-sm whitespace-nowrap',
+                                    )}
+                                >
                                     {formatDateTime(event.receivedAt)}
                                 </TableCell>
-                                <TableCell>
-                                    <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+                                <TableCell className={BODY_CELL}>
+                                    <span className="mono-value text-xs bg-teal-mid/8 text-teal-mid px-2 py-0.5 rounded">
                                         {event.eventType}
                                     </span>
                                 </TableCell>
-                                <TableCell className="font-mono text-xs text-gray-600">
+                                <TableCell
+                                    className={clsx(
+                                        BODY_CELL,
+                                        'mono-value text-xs text-teal-mid/60',
+                                    )}
+                                >
                                     {event.virtualAccountId}
                                 </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        color={
-                                            event.processed ? 'green' : 'red'
-                                        }
-                                    >
+                                <TableCell className={BODY_CELL}>
+                                    <Pill tone={event.processed ? 'success' : 'error'}>
                                         {event.processed
                                             ? 'Processed'
                                             : 'Pending'}
-                                    </Badge>
+                                    </Pill>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className={BODY_CELL}>
                                     {event.error ? (
                                         <span
-                                            className="text-red-600 text-xs cursor-help"
+                                            className="text-error text-xs cursor-help"
                                             title={event.error}
                                         >
                                             {truncateString(event.error, 40)}
                                         </span>
                                     ) : (
-                                        <span className="text-gray-300 text-xs">
+                                        <span className="text-teal-mid/30 text-xs">
                                             —
                                         </span>
                                     )}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className={BODY_CELL}>
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() =>
                                                 setPayloadEvent(event)
                                             }
-                                            className="text-xs text-brand-mid hover:text-brand-dark font-medium underline"
+                                            className="text-xs text-teal-mid hover:text-brand-dark font-medium underline focus-visible:ring-2 focus-visible:ring-accent-gold rounded"
                                         >
                                             View Payload
                                         </button>

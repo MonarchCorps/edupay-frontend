@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 
 const SIZES = {
@@ -27,6 +27,30 @@ export function Modal({
     className,
 }: ModalProps) {
     const panelRef = useRef<HTMLDivElement>(null);
+    const [rendered, setRendered] = useState(isOpen);
+    const [visible, setVisible] = useState(false);
+
+    // Mount immediately on open — derived during render rather than in an
+    // effect, since it's just adjusting state in response to a prop change.
+    if (isOpen && !rendered) {
+        setRendered(true);
+    }
+
+    // Keep the modal mounted briefly on close so the exit transition can
+    // play, and flip `visible` a frame after mount so the enter transition
+    // starts from its initial (hidden) state rather than snapping in.
+    useEffect(() => {
+        if (isOpen) {
+            const raf = requestAnimationFrame(() => setVisible(true));
+            return () => cancelAnimationFrame(raf);
+        }
+        const hide = requestAnimationFrame(() => setVisible(false));
+        const timeout = setTimeout(() => setRendered(false), 150);
+        return () => {
+            cancelAnimationFrame(hide);
+            clearTimeout(timeout);
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -45,11 +69,15 @@ export function Modal({
         if (isOpen) panelRef.current?.focus();
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!rendered) return null;
 
     return (
         <div
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            className={clsx(
+                'fixed inset-0 bg-[#0B211D]/55 z-50 flex items-center justify-center p-4',
+                'transition-opacity duration-150 ease-out',
+                visible ? 'opacity-100' : 'opacity-0',
+            )}
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -62,13 +90,14 @@ export function Modal({
                 aria-labelledby="modal-title"
                 tabIndex={-1}
                 className={clsx(
-                    'bg-white rounded-tremor-default shadow-tremor-dropdown w-full outline-none',
-                    'transition-all duration-200 ease-out',
+                    'bg-[#FAF7F0] rounded-tremor-default shadow-tremor-dropdown w-full outline-none',
+                    'transition-all duration-150 ease-out',
+                    visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95',
                     SIZES[size],
                     className,
                 )}
             >
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-teal-mid/10">
                     <h2
                         id="modal-title"
                         className="text-lg font-semibold text-brand-dark"
@@ -77,7 +106,7 @@ export function Modal({
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-accent rounded p-1"
+                        className="text-teal-mid/50 hover:text-teal-mid focus-visible:ring-2 focus-visible:ring-accent-gold rounded p-1 transition-colors"
                         aria-label="Close modal"
                     >
                         <svg
@@ -99,7 +128,7 @@ export function Modal({
                 <div className="px-6 py-4">{children}</div>
 
                 {footer && (
-                    <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+                    <div className="px-6 py-4 border-t border-teal-mid/10 flex justify-end gap-3">
                         {footer}
                     </div>
                 )}

@@ -14,33 +14,67 @@ export const API_BASE_URL =
 
 export const USE_MOCK: boolean = import.meta.env.VITE_USE_MOCK === 'true';
 
+// Restrained semantic tones used by our custom badge components — distinct
+// from Tremor's own `Color` enum, which only drives chart legends here.
+export type Tone = 'gold' | 'success' | 'info' | 'neutral' | 'error';
+
 export const ACCOUNT_STATUSES: Record<
     AccountStatus,
-    { label: string; colour: string; tremorColour: Color }
+    { label: string; colour: string; tremorColour: Color; tone: Tone }
 > = {
-    pending: { label: 'Pending', colour: 'yellow', tremorColour: 'yellow' },
-    active: { label: 'Active', colour: 'green', tremorColour: 'green' },
-    frozen: { label: 'Frozen', colour: 'blue', tremorColour: 'blue' },
-    closed: { label: 'Closed', colour: 'gray', tremorColour: 'gray' },
-    flagged: { label: 'Flagged', colour: 'red', tremorColour: 'red' },
-    resolved: { label: 'Resolved', colour: 'green', tremorColour: 'green' },
+    pending: {
+        label: 'Pending',
+        colour: 'yellow',
+        tremorColour: 'yellow',
+        tone: 'gold',
+    },
+    active: {
+        label: 'Active',
+        colour: 'green',
+        tremorColour: 'green',
+        tone: 'success',
+    },
+    frozen: {
+        label: 'Frozen',
+        colour: 'blue',
+        tremorColour: 'blue',
+        tone: 'info',
+    },
+    closed: {
+        label: 'Closed',
+        colour: 'gray',
+        tremorColour: 'gray',
+        tone: 'neutral',
+    },
+    flagged: {
+        label: 'Flagged',
+        colour: 'red',
+        tremorColour: 'red',
+        tone: 'error',
+    },
+    resolved: {
+        label: 'Resolved',
+        colour: 'green',
+        tremorColour: 'green',
+        tone: 'neutral',
+    },
 };
 
 export const TRANSACTION_DIRECTIONS: Record<
     TransactionDirection,
-    { label: string; tremorColour: Color }
+    { label: string; tremorColour: Color; tone: Tone }
 > = {
-    credit: { label: 'Credit', tremorColour: 'green' },
-    debit: { label: 'Debit', tremorColour: 'red' },
+    credit: { label: 'Credit', tremorColour: 'green', tone: 'success' },
+    debit: { label: 'Debit', tremorColour: 'red', tone: 'error' },
 };
 
 export const TRANSACTION_STATUSES: Record<
     TransactionStatus,
-    { label: string; tremorColour: Color }
+    { label: string; tremorColour: Color; tone: Tone }
 > = {
-    success: { label: 'Success', tremorColour: 'green' },
-    failed: { label: 'Failed', tremorColour: 'red' },
-    pending: { label: 'Pending', tremorColour: 'yellow' },
+    success: { label: 'Success', tremorColour: 'green', tone: 'success' },
+    failed: { label: 'Failed', tremorColour: 'red', tone: 'error' },
+    pending: { label: 'Pending', tremorColour: 'yellow', tone: 'gold' },
 };
 
 export const KYC_TIERS: Record<KycTier, { label: string; limit: string }> = {

@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Card, Button } from '@tremor/react';
-import { Zap } from 'lucide-react';
+import { LogoMark } from '../components/ui/Logo';
 import {
     registerMerchant,
     bootstrapApiKey,
-    getMerchantByEmail,
+    getMe,
+    setStoredApiKey,
+    setActiveMode,
+    detectModeFromKey,
 } from '../api/auth';
 import type { ApiError } from '../types';
 
@@ -18,7 +21,7 @@ interface RegisterData {
 }
 
 interface SignInData {
-    email: string;
+    apiKey: string;
 }
 
 interface FieldProps {
@@ -30,17 +33,17 @@ interface FieldProps {
 function Field({ label, error, children }: FieldProps) {
     return (
         <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-brand-dark/80">
                 {label}
             </label>
             {children}
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+            {error && <p className="text-xs text-error mt-1">{error}</p>}
         </div>
     );
 }
 
 const inputClass =
-    'w-full border border-gray-300 rounded-tremor-small px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-mid disabled:opacity-50';
+    'w-full bg-[#FFFDF8] border border-teal-mid/20 rounded-tremor-small px-3 py-2 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-accent-gold focus:border-accent-gold transition-colors disabled:opacity-50';
 
 export default function Onboarding() {
     const navigate = useNavigate();
@@ -73,14 +76,13 @@ export default function Onboarding() {
         setIsLoading(true);
         setApiError(null);
         try {
-            const merchant = await getMerchantByEmail(data.email);
-            await bootstrapApiKey(merchant.id);
+            await getMe(data.apiKey);
+            const keyMode = detectModeFromKey(data.apiKey);
+            setStoredApiKey(keyMode, data.apiKey);
+            setActiveMode(keyMode);
             navigate('/', { replace: true });
         } catch (err) {
-            setApiError(
-                (err as ApiError)?.message ??
-                    'No account found for that email.',
-            );
+            setApiError((err as ApiError)?.message ?? 'Invalid API key.');
             setIsLoading(false);
         }
     });
@@ -91,25 +93,25 @@ export default function Onboarding() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-paper flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-14 h-14 bg-brand-mid rounded-2xl mb-4 shadow-tremor-card">
-                        <Zap className="w-7 h-7 text-accent" />
+                    <div className="inline-flex items-center justify-center mb-5 rounded-2xl shadow-tremor-card">
+                        <LogoMark size={64} />
                     </div>
-                    <h1 className="text-2xl font-bold text-brand-dark">
+                    <h1 className="text-3xl font-bold text-brand-dark tracking-tight">
                         Welcome to EduPay
                     </h1>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-teal-mid/60 mt-2">
                         {mode === 'register'
                             ? 'Create your merchant account to start issuing dedicated virtual accounts.'
-                            : 'Sign in with your registered email to continue.'}
+                            : 'Sign in with your API key to continue.'}
                     </p>
                 </div>
 
                 <Card>
                     {apiError && (
-                        <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-tremor-small text-sm text-red-700">
+                        <div className="mb-5 px-4 py-3 bg-error/10 border border-error/25 rounded-tremor-small text-sm text-error">
                             {apiError}
                         </div>
                     )}
@@ -166,7 +168,7 @@ export default function Onboarding() {
                                 type="submit"
                                 loading={isLoading}
                                 disabled={isLoading}
-                                className="w-full bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold mt-2"
+                                className="w-full bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold mt-2"
                                 size="lg"
                             >
                                 Create Account & Get API Key
@@ -175,25 +177,21 @@ export default function Onboarding() {
                     ) : (
                         <form onSubmit={handleSignIn} className="space-y-5">
                             <Field
-                                label="Email Address"
+                                label="API Key"
                                 error={
-                                    signinForm.formState.errors.email?.message
+                                    signinForm.formState.errors.apiKey?.message
                                 }
                             >
                                 <input
-                                    {...signinForm.register('email', {
-                                        required: 'Email is required',
-                                        pattern: {
-                                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                            message:
-                                                'Enter a valid email address',
-                                        },
+                                    {...signinForm.register('apiKey', {
+                                        required: 'API key is required',
                                     })}
-                                    type="email"
-                                    placeholder="you@company.com"
-                                    className={inputClass}
+                                    type="password"
+                                    placeholder="ep_sandbox_..."
+                                    className={`${inputClass} mono-value`}
                                     disabled={isLoading}
                                     autoFocus
+                                    autoComplete="off"
                                 />
                             </Field>
 
@@ -201,7 +199,7 @@ export default function Onboarding() {
                                 type="submit"
                                 loading={isLoading}
                                 disabled={isLoading}
-                                className="w-full bg-accent hover:bg-accent/90 text-gray-900 border-accent font-semibold mt-2"
+                                className="w-full bg-accent-gold hover:bg-accent-gold/90 text-brand-dark border-accent-gold font-semibold mt-2"
                                 size="lg"
                             >
                                 Sign In
@@ -209,25 +207,25 @@ export default function Onboarding() {
                         </form>
                     )}
 
-                    <div className="mt-5 pt-4 border-t border-gray-100 text-center">
+                    <div className="mt-5 pt-4 border-t border-teal-mid/10 text-center">
                         {mode === 'register' ? (
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-teal-mid/60">
                                 Already have an account?{' '}
                                 <button
                                     type="button"
                                     onClick={() => switchMode('signin')}
-                                    className="text-brand-mid hover:text-brand-dark font-medium"
+                                    className="text-teal-mid hover:text-brand-dark font-medium"
                                 >
                                     Sign in
                                 </button>
                             </p>
                         ) : (
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-teal-mid/60">
                                 New to EduPay?{' '}
                                 <button
                                     type="button"
                                     onClick={() => switchMode('register')}
-                                    className="text-brand-mid hover:text-brand-dark font-medium"
+                                    className="text-teal-mid hover:text-brand-dark font-medium"
                                 >
                                     Create an account
                                 </button>
@@ -236,7 +234,7 @@ export default function Onboarding() {
                     </div>
                 </Card>
 
-                <p className="text-center text-xs text-gray-400 mt-6">
+                <p className="text-center text-xs text-teal-mid/40 mt-6">
                     Sandbox mode — no real money is processed.
                 </p>
             </div>

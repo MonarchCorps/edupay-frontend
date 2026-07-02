@@ -1,6 +1,8 @@
 import type { Transaction } from '../../types';
 
-export const mockTransactions: Transaction[] = [
+// Seeded demo data predates sandbox mode — tag it all 'live' so it only
+// shows up in the Live view; sandbox starts empty until you provision into it.
+const rawMockTransactions: Omit<Transaction, 'environment'>[] = [
     {
         id: 'txn_001',
         virtualAccountId: 'acc_001',
@@ -652,3 +654,7 @@ export const mockTransactions: Transaction[] = [
         createdAt: '2026-06-18T14:00:00.000Z',
     },
 ];
+
+export const mockTransactions: Transaction[] = rawMockTransactions.map(
+    (t) => ({ ...t, environment: 'live' }),
+);

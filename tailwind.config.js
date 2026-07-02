@@ -11,28 +11,49 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Inter', ...fontFamily.sans],
+        mono: ['"IBM Plex Mono"', ...fontFamily.mono],
       },
       colors: {
-        'brand-dark':   '#0D3D3D',
-        'brand-mid':    '#1A6B6B',
-        'brand-light':  '#E6F4F4',
-        'accent':       '#D4AF37',
-        'accent-light': '#FDF7E3',
+        // Locked design tokens — sourced from CSS variables in index.css so
+        // there's a single place to tune the palette.
+        paper:          'var(--bg-content)',
+        sidebar:        'var(--bg-sidebar)',
+        'accent-gold':  'var(--accent-gold)',
+        'teal-mid':     'var(--teal-mid)',
+        success:        'var(--success)',
+        error:          'var(--error)',
+
+        // Legacy semantic names kept so existing className usage across the
+        // app repaints with the new palette without a mechanical rename.
+        'brand-dark':   'var(--bg-sidebar)',
+        'brand-mid':    'var(--teal-mid)',
+        'brand-light':  'var(--bg-content)',
+        'accent':       'var(--accent-gold)',
+        'accent-light': '#F0E2BE',
+
         tremor: {
           brand: {
-            faint:    '#E6F4F4',
-            muted:    '#B2D8D8',
-            subtle:   '#1A6B6B',
-            DEFAULT:  '#0D3D3D',
-            emphasis: '#0A3030',
-            inverted: '#FFFFFF',
+            faint:    '#FAF3E1',
+            muted:    '#E8D2A0',
+            subtle:   '#D9A94E',
+            DEFAULT:  '#D9A94E',
+            emphasis: '#B8863A',
+            inverted: '#0B211D',
           },
+          background: {
+            muted:    '#F0EAD9',
+            subtle:   '#F5F1E8',
+            DEFAULT:  '#FAF7F0',
+            emphasis: '#3A362C',
+          },
+          border: { DEFAULT: '#E5DFCF' },
+          ring:   { DEFAULT: '#E5DFCF' },
         },
       },
       boxShadow: {
-        'tremor-input':    '0 1px 2px rgba(0,0,0,0.05)',
-        'tremor-card':     '0 4px 6px rgba(0,0,0,0.07)',
-        'tremor-dropdown': '0 10px 15px rgba(0,0,0,0.10)',
+        'tremor-input':    '0 1px 2px rgba(11,33,29,0.06)',
+        'tremor-card':     '0 2px 8px rgba(11,33,29,0.08)',
+        'tremor-dropdown': '0 12px 24px rgba(11,33,29,0.14)',
       },
       borderRadius: {
         'tremor-small':   '6px',

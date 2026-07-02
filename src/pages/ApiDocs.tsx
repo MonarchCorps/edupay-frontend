@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Card,
-    Badge,
     Callout,
     Table,
     TableHead,
@@ -16,37 +15,48 @@ import {
 } from '@tremor/react';
 import { BookOpen, ChevronDown } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
+import { Pill } from '../components/ui/Pill';
+import { JsonCode } from '../components/ui/JsonView';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { clsx } from 'clsx';
-import type { Color } from '@tremor/react';
+import type { Tone } from '../utils/constants';
 
 void BookOpen;
 
-const METHOD_COLOURS: Record<string, Color> = {
-    GET: 'green',
-    POST: 'blue',
-    PATCH: 'yellow',
-    DELETE: 'red',
+const METHOD_TONE: Record<string, Tone> = {
+    GET: 'success',
+    POST: 'gold',
+    PATCH: 'info',
+    DELETE: 'error',
 };
 
 interface CodeBlockProps {
     children: string;
 }
 
+// Renders JSON-shaped snippets with syntax highlighting; plain-text snippets
+// (query strings, JS code) render as flat mono text.
 function CodeBlock({ children }: CodeBlockProps) {
     const { copy, copied } = useCopyToClipboard();
+    const looksLikeJson = /^\s*[[{]/.test(children);
     return (
         <div className="relative rounded-tremor-small overflow-hidden mt-2">
             <button
                 onClick={() => copy(children)}
-                className="absolute top-2 right-2 text-xs text-brand-light/60 hover:text-brand-light bg-brand-dark/80 px-2 py-0.5 rounded"
+                className="absolute top-2 right-2 text-xs text-brand-light/60 hover:text-brand-light bg-brand-dark/80 px-2 py-0.5 rounded transition-colors"
                 aria-label="Copy code"
             >
                 {copied ? 'Copied!' : 'Copy'}
             </button>
-            <pre className="bg-brand-dark text-brand-light font-mono text-xs p-4 overflow-auto">
-                {children}
-            </pre>
+            <div className="bg-brand-dark p-4 overflow-auto">
+                {looksLikeJson ? (
+                    <JsonCode text={children} />
+                ) : (
+                    <pre className="mono-value text-brand-light text-xs">
+                        {children}
+                    </pre>
+                )}
+            </div>
         </div>
     );
 }
@@ -162,21 +172,21 @@ function EndpointCard({ endpoint }: EndpointCardProps) {
     return (
         <Card className="cursor-pointer" onClick={() => setOpen((o) => !o)}>
             <div className="flex items-center gap-3">
-                <Badge
-                    color={METHOD_COLOURS[endpoint.method]}
-                    className="font-mono text-xs w-14 text-center"
+                <Pill
+                    tone={METHOD_TONE[endpoint.method] ?? 'neutral'}
+                    className="mono-value w-14 justify-center"
                 >
                     {endpoint.method}
-                </Badge>
-                <code className="font-mono text-sm text-brand-dark flex-1">
+                </Pill>
+                <code className="mono-value text-sm text-brand-dark flex-1">
                     {endpoint.path}
                 </code>
-                <span className="text-sm text-gray-500 hidden md:block">
+                <span className="text-sm text-teal-mid/55 hidden md:block">
                     {endpoint.description}
                 </span>
                 <ChevronDown
                     className={clsx(
-                        'w-4 h-4 text-gray-400 flex-shrink-0 transition-transform',
+                        'w-4 h-4 text-teal-mid/40 flex-shrink-0 transition-transform',
                         open && 'rotate-180',
                     )}
                 />
@@ -186,15 +196,17 @@ function EndpointCard({ endpoint }: EndpointCardProps) {
                     className="mt-4 space-y-2"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <Text className="font-medium">Request</Text>
+                    <Text className="font-medium text-brand-dark">Request</Text>
                     {endpoint.request ? (
                         <CodeBlock>{endpoint.request}</CodeBlock>
                     ) : (
-                        <Text className="text-gray-400 text-sm">
+                        <Text className="text-teal-mid/45 text-sm">
                             No request body
                         </Text>
                     )}
-                    <Text className="font-medium mt-3">Response</Text>
+                    <Text className="font-medium mt-3 text-brand-dark">
+                        Response
+                    </Text>
                     <CodeBlock>{endpoint.response}</CodeBlock>
                 </div>
             )}
@@ -274,21 +286,22 @@ export default function ApiDocs() {
                 <Text className="mt-2">
                     All API requests must include a bearer token in the
                     Authorization header. Generate your API key in{' '}
-                    <Link to="/settings" className="text-brand-mid underline">
+                    <Link to="/settings" className="text-teal-mid underline">
                         Settings
                     </Link>
                     .
                 </Text>
-                <CodeBlock>{`Authorization: Bearer sk_sandbox_••••••••••••••••`}</CodeBlock>
+                <CodeBlock>{`Authorization: Bearer ep_sandbox_••••••••••••••••`}</CodeBlock>
                 <Callout
                     className="mt-4"
-                    title="Sandbox vs Production"
+                    title="Sandbox vs Live"
                     color="yellow"
                 >
                     Keys prefixed with{' '}
-                    <code className="font-mono text-xs">sk_sandbox_</code> are
-                    for sandbox only. Production keys use{' '}
-                    <code className="font-mono text-xs">sk_live_</code>.
+                    <code className="mono-value text-xs">ep_sandbox_</code> are
+                    for sandbox only — no real Nomba calls are made and data
+                    never mixes with live. Live keys use{' '}
+                    <code className="mono-value text-xs">ep_live_</code>.
                 </Callout>
             </Card>
 
@@ -309,25 +322,29 @@ export default function ApiDocs() {
                 <Text className="mb-4 mt-1">
                     EduPay forwards Nomba webhook events to your registered
                     endpoint. Each event is signed with HMAC-SHA256 via the{' '}
-                    <code className="font-mono text-xs">X-Nomba-Signature</code>{' '}
+                    <code className="mono-value text-xs">X-Nomba-Signature</code>{' '}
                     header.
                 </Text>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableHeaderCell>Event</TableHeaderCell>
-                            <TableHeaderCell>When it fires</TableHeaderCell>
+                            <TableHeaderCell className="text-xs uppercase tracking-wide text-teal-mid/50">
+                                Event
+                            </TableHeaderCell>
+                            <TableHeaderCell className="text-xs uppercase tracking-wide text-teal-mid/50">
+                                When it fires
+                            </TableHeaderCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {WEBHOOK_EVENTS_TABLE.map((r) => (
                             <TableRow key={r.event}>
-                                <TableCell>
-                                    <code className="font-mono text-xs">
+                                <TableCell className="py-3">
+                                    <code className="mono-value text-xs text-teal-mid">
                                         {r.event}
                                     </code>
                                 </TableCell>
-                                <TableCell className="text-gray-600 text-sm">
+                                <TableCell className="text-teal-mid/60 text-sm py-3">
                                     {r.when}
                                 </TableCell>
                             </TableRow>
@@ -377,31 +394,37 @@ if (signature !== expected) {
                 <Table className="mt-3">
                     <TableHead>
                         <TableRow>
-                            <TableHeaderCell>Code</TableHeaderCell>
-                            <TableHeaderCell>HTTP</TableHeaderCell>
-                            <TableHeaderCell>Meaning</TableHeaderCell>
-                            <TableHeaderCell>Action</TableHeaderCell>
+                            <TableHeaderCell className="text-xs uppercase tracking-wide text-teal-mid/50">
+                                Code
+                            </TableHeaderCell>
+                            <TableHeaderCell className="text-xs uppercase tracking-wide text-teal-mid/50">
+                                HTTP
+                            </TableHeaderCell>
+                            <TableHeaderCell className="text-xs uppercase tracking-wide text-teal-mid/50">
+                                Meaning
+                            </TableHeaderCell>
+                            <TableHeaderCell className="text-xs uppercase tracking-wide text-teal-mid/50">
+                                Action
+                            </TableHeaderCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {ERROR_CODES.map((r) => (
                             <TableRow key={r.code}>
-                                <TableCell>
-                                    <code className="font-mono text-xs">
+                                <TableCell className="py-3">
+                                    <code className="mono-value text-xs text-teal-mid">
                                         {r.code}
                                     </code>
                                 </TableCell>
-                                <TableCell>
-                                    <Badge
-                                        color={r.http < 500 ? 'yellow' : 'red'}
-                                    >
+                                <TableCell className="py-3">
+                                    <Pill tone={r.http < 500 ? 'gold' : 'error'}>
                                         {r.http}
-                                    </Badge>
+                                    </Pill>
                                 </TableCell>
-                                <TableCell className="text-sm text-gray-600">
+                                <TableCell className="text-sm text-teal-mid/60 py-3">
                                     {r.meaning}
                                 </TableCell>
-                                <TableCell className="text-sm text-gray-600">
+                                <TableCell className="text-sm text-teal-mid/60 py-3">
                                     {r.action}
                                 </TableCell>
                             </TableRow>

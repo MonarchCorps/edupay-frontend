@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { JsonView } from './JsonView';
 
 interface WebhookPayloadViewerProps {
     payload: unknown;
@@ -54,9 +55,9 @@ export function WebhookPayloadViewer({
                 </div>
             </div>
             {open && (
-                <pre className="m-0 p-4 bg-brand-dark text-brand-light font-mono text-[13px] leading-relaxed overflow-auto max-h-96">
-                    {json}
-                </pre>
+                <div className="m-0 p-4 bg-brand-dark overflow-auto max-h-96">
+                    <JsonView data={payload} />
+                </div>
             )}
         </div>
     );

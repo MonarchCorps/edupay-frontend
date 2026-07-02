@@ -22,11 +22,11 @@ export function PageHeader({
             )}
         >
             <div>
-                <h1 className="text-2xl font-bold text-brand-dark leading-tight">
+                <h1 className="text-[28px] font-bold text-brand-dark leading-tight tracking-tight">
                     {title}
                 </h1>
                 {subtitle && (
-                    <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
+                    <p className="text-sm text-teal-mid/60 mt-1">{subtitle}</p>
                 )}
             </div>
             {action && <div className="flex-shrink-0">{action}</div>}
